@@ -46,8 +46,8 @@ image_grid(Cols, Rows) -->
     findall(
       Author-Base,
       (
-        rdf(Entry, cp:image, literal(type(Datatype, File)), 'CP_Entry'),
-        once(rdf_datatype(Entry, cp:author, string, Author, 'CP_Entry')),
+        rdf(Entry, sa:image, literal(type(Datatype, File)), 'CP_Entry'),
+        once(rdf_datatype(Entry, sa:author, string, Author, 'CP_Entry')),
         file_base_name(File, Base)
       ),
       Pairs

@@ -12,5 +12,5 @@ load_sa:-
 
   % SA
   assert(user:file_search_path(sa, ThisDir)),
-  assert(user:file_search_path(sa_data, sa('Data'))),
   use_module(sa(sa_web)).
+
