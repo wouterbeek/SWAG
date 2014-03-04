@@ -22,5 +22,5 @@ load_concrete:-
 load_concrete:-
   absolute_file_name(data('CP'), File, [access(read),file_type(turtle)]),
   % Make sure the VoID library is saved in graph 'CP'.
-  void_load_library(File, 'CP').
+  void_load(File, 'CP').
 

@@ -195,7 +195,7 @@ crawl_image(Entry, ImageName):-
 crawl_image(_Entry, _ImageName).
 
 save_concrete:-
-  void_save_library('CP').
+  void_save('CP').
 
 %% sa_predicate_term(?Legacy:atom, ?Property:atom, ?Label:atom) is nondet.
 
