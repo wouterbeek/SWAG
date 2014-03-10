@@ -8,28 +8,16 @@
 /** <module> Sackner Archive Scraper
 
 Constructs a Semantic Web database based on the Sackner Archive data,
- by scraping an online Web site.
+by scraping an online Web site.
 
 # Number of entries clawled.
 
 47.374 entries, with codes between 00.000 and 50.122.
 
-# Errors during the entiry clawl process.
-
-ERROR: Socket error: Connection timed out
-
-ERROR: url `http://ww2.rediscov.com/sacknerarchive/FULL/14424s.jpg#'
-does not exist (status(404,Not Found))
-
-ERROR: copy_stream_data/2: I/O error in read on stream
-<stream>(0000000004FB0150) (Socket operation on non-socket)
-
 @author Wouter Beek
 @version 2013/04, 2014/03
 */
 
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
 :- use_module(generics(atom_ext)).
 :- use_module(html(html)).
 :- use_module(html(html_image)).
@@ -45,9 +33,6 @@ ERROR: copy_stream_data/2: I/O error in read on stream
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdfs(rdfs_label_build)).
 :- use_module(swag(swag)).
-:- use_module(xsd(xsd)).
-:- use_module(xsd(xsd_decimal)).
-:- use_module(xsd(xsd_gYear)).
 
 :- use_module(xml(xml_namespace)).
 :- xml_register_namespace(swag, 'http://www.wouterbeek.com/SWAG/').
@@ -168,51 +153,6 @@ sa_assert_triple(Graph, Entry, PredicateName-Value):-
   rdf_global_id(swag:PredicateName, Predicate),
   rdf_assert_datatype(Entry, Predicate, xsd:string, Value, Graph).
 
-/*
-% Not all years are compliant with `xsd:gYear`.
-sa_assert_value(Entry, Predicate, year, Value1, Graph):-
-  once(dcg_phrase(year(Value2), Value1)), !,
-  sa_assert_value(Entry, Predicate, gYear, Value2, Graph).
-sa_assert_value(Entry, Predicate, dimensions, Value, Graph):- !,
-  once(dcg_phrase(dimensions(Height, Width, Depth), Value)),
-  rdf_bnode(BNode),
-  rdf_assert(Entry, Predicate, BNode, Graph),
-  rdf_assert_datatype(BNode, swag:height, xsd:decimal, Height, Graph),
-  rdf_assert_datatype(BNode, swag:width, xsd:decimal, Width, Graph),
-  (
-    var(Depth), !
-  ;
-    rdf_assert_datatype(BNode, swag:depth, xsd:decimal, Depth, Graph)
-  ).
-sa_assert_value(Entry, Predicate, Type, Value1, Graph):-
-  convert_to_xsd(Type, Value1, Datatype, Value2),
-  rdf_assert_datatype(Entry, Predicate, Datatype, Value2, Graph), !.
-sa_assert_value(Entry, Predicate, Type, Value, Graph):-
-  gtrace, %DEB
-  format(user_output, '<~w,~w,~w^^~w>', [Entry,Predicate,Value,Type]),
-  sa_assert_value(Entry, Predicate, Type, Value, Graph).
-
-year(Year) -->
-  (`c.`, blanks ; []),
-  gYearLexicalRep(dateTime(Year, _, _, _, _, _, _)).
-
-dimensions(Height, Width, Depth) -->
-  decimalLexicalRep(Height),
-  dimensions_separator,
-  decimalLexicalRep(Width),
-  (
-    dimensions_separator,
-    decimalLexicalRep(Depth)
-  ;
-    []
-  ).
-
-dimensions_separator -->
-  blanks,
-  `x`,
-  blanks.
-*/
-
 
 %! crawl_image(+Graph:atom, +Entry:integer, -ImageName:atom) is det.
 % Returns an image for the given entry in the Sackner Archive.
@@ -272,7 +212,7 @@ sa_predicate_term('Total Copies:',            number_of_copies,        'Number o
 sa_predicate_term('Translator:',              translator,              'Translator'                  , string    ).
 sa_predicate_term('Volume:',                  volume,                  'Volume'                      , string    ).
 sa_predicate_term('Year:',                    year,                    'Year'                        , year      ).
-sa_predicate_term(Name, _, _, _):-
+sa_predicate_term(Name, _, _):-
   nonvar(Name),
   gtrace, %DEB
   format(user_output, '~a', [Name]).
