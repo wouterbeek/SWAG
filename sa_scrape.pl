@@ -75,7 +75,7 @@ sa_scrape(Graph, FirstNumber):-
 assert_schema(Graph):-
   % Assert descriptive labels for the properties.
   forall(
-    sa_predicate_term(_, PropertyName1, RdfsLabel, _),
+    sa_predicate_term(_, PropertyName1, RdfsLabel),
     (
       atomic_list_concat(['Property',PropertyName1], '/', PropertyName2),
       rdf_global_id(swag:PropertyName2, Property),
@@ -146,7 +146,7 @@ sa_nvpair(Table, PredicateName2, Value2):-
   ),
   % Some values have superfluous spaces pre- and/or postfixed.
   strip_atom([' '], Value1, Value2),
-  once(sa_predicate_term(PredicateName1, PredicateName2, _, _)).
+  once(sa_predicate_term(PredicateName1, PredicateName2, _)).
 
 
 sa_assert_triple(Graph, Entry, PredicateName-Value):-
@@ -177,41 +177,41 @@ crawl_image(Graph, Entry, Name):-
 
 %% sa_predicate_term(?Legacy:atom, ?Property:atom, ?Label:atom) is nondet.
 
-sa_predicate_term('# Artist Proofs:',         number_of_artist_proofs, 'Number of artist proofs'     , integer   ).
-sa_predicate_term('# Images:',                number_of_images,        'Number of images'            , integer   ).
-sa_predicate_term('# Letter Art Proofs:',     number_of_art_proofs,    'Number of art proofs'        , integer   ).
-sa_predicate_term('# Letter Copies:',         number_of_letter_copies, 'Number of letter copies'     , integer   ).
-sa_predicate_term('Announcement:',            announcement,            'Announcement'                , string    ).
-sa_predicate_term('Annotation:',              annotation,              'Annotation'                  , string    ).
-sa_predicate_term('Author:',                  author,                  'Author'                      , string    ).
-sa_predicate_term('Catalog:',                 catalog,                 'Catalog'                     , string    ).
-sa_predicate_term('City County:',             city_country,            'City and/or country'         , string    ).
-sa_predicate_term('Classification:',          classification,          'Classification'              , string    ).
-sa_predicate_term('Container:',               container,               'Container'                   , string    ).
-sa_predicate_term('Contributors:',            contributor,             'Contributor'                 , string    ).
-sa_predicate_term('Exhibition Announcement:', exhibition_announcement, 'Exhibition announcement'     , string    ).
-sa_predicate_term('Exhibition Catalog:',      exhibition_catalog,      'Exhibition catalog'          , string    ).
-sa_predicate_term('Ht Wdt Dpth:',             dimensions,              'Dimensions'                  , string    ).
-sa_predicate_term('Illus BWC:',               illustration_bwc,        'Illustration BWC'            , string    ).
-sa_predicate_term('Inscribed:',               inscribed,               'Inscribed'                   , string    ).
-sa_predicate_term('Language:',                language,                'Language'                    , string    ).
-sa_predicate_term('Media:',                   media,                   'Media'                       , string    ).
-sa_predicate_term('Nationality:',             nationality,             'Nationality'                 , string    ).
-sa_predicate_term('Number of Dups:',          number_of_dups,          'Number of duplicates'        , decimal   ).
-sa_predicate_term('Nbr Ser Mn:',              number_series_month,     'Magazine number/series/month', string    ).
-sa_predicate_term('Pages:',                   number_of_pages,         'Number of pages'             , integer   ).
-sa_predicate_term('Periodical:',              periodical,              'Periodical'                  , string    ).
-sa_predicate_term('Publisher:',               publisher,               'Publisher'                   , string    ).
-sa_predicate_term('Purchase Year:',           purchase_year,           'Year of purchase'            , year     ).
-sa_predicate_term('Series:',                  series,                  'Series'                      , string    ).
-sa_predicate_term('Signature:',               signature,               'Signature'                   , string    ).
-sa_predicate_term('Sub Tit Au:',              subtitle_author,         'Subtitle author'             , string    ).
-sa_predicate_term('Subtitle:',                subtitle,                'Subtitle'                    , string    ).
-sa_predicate_term('Title:',                   title,                   'Title'                       , string    ).
-sa_predicate_term('Total Copies:',            number_of_copies,        'Number of copies'            , integer   ).
-sa_predicate_term('Translator:',              translator,              'Translator'                  , string    ).
-sa_predicate_term('Volume:',                  volume,                  'Volume'                      , string    ).
-sa_predicate_term('Year:',                    year,                    'Year'                        , year      ).
+sa_predicate_term('# Artist Proofs:',         number_of_artist_proofs, 'Number of artist proofs'     ).
+sa_predicate_term('# Images:',                number_of_images,        'Number of images'            ).
+sa_predicate_term('# Letter Art Proofs:',     number_of_art_proofs,    'Number of art proofs'        ).
+sa_predicate_term('# Letter Copies:',         number_of_letter_copies, 'Number of letter copies'     ).
+sa_predicate_term('Announcement:',            announcement,            'Announcement'                ).
+sa_predicate_term('Annotation:',              annotation,              'Annotation'                  ).
+sa_predicate_term('Author:',                  author,                  'Author'                      ).
+sa_predicate_term('Catalog:',                 catalog,                 'Catalog'                     ).
+sa_predicate_term('City County:',             city_country,            'City and/or country'         ).
+sa_predicate_term('Classification:',          classification,          'Classification'              ).
+sa_predicate_term('Container:',               container,               'Container'                   ).
+sa_predicate_term('Contributors:',            contributor,             'Contributor'                 ).
+sa_predicate_term('Exhibition Announcement:', exhibition_announcement, 'Exhibition announcement'     ).
+sa_predicate_term('Exhibition Catalog:',      exhibition_catalog,      'Exhibition catalog'          ).
+sa_predicate_term('Ht Wdt Dpth:',             dimensions,              'Dimensions'                  ).
+sa_predicate_term('Illus BWC:',               illustration_bwc,        'Illustration BWC'            ).
+sa_predicate_term('Inscribed:',               inscribed,               'Inscribed'                   ).
+sa_predicate_term('Language:',                language,                'Language'                    ).
+sa_predicate_term('Media:',                   media,                   'Media'                       ).
+sa_predicate_term('Nationality:',             nationality,             'Nationality'                 ).
+sa_predicate_term('Number of Dups:',          number_of_dups,          'Number of duplicates'        ).
+sa_predicate_term('Nbr Ser Mn:',              number_series_month,     'Magazine number/series/month').
+sa_predicate_term('Pages:',                   number_of_pages,         'Number of pages'             ).
+sa_predicate_term('Periodical:',              periodical,              'Periodical'                  ).
+sa_predicate_term('Publisher:',               publisher,               'Publisher'                   ).
+sa_predicate_term('Purchase Year:',           purchase_year,           'Year of purchase'            ).
+sa_predicate_term('Series:',                  series,                  'Series'                      ).
+sa_predicate_term('Signature:',               signature,               'Signature'                   ).
+sa_predicate_term('Sub Tit Au:',              subtitle_author,         'Subtitle author'             ).
+sa_predicate_term('Subtitle:',                subtitle,                'Subtitle'                    ).
+sa_predicate_term('Title:',                   title,                   'Title'                       ).
+sa_predicate_term('Total Copies:',            number_of_copies,        'Number of copies'            ).
+sa_predicate_term('Translator:',              translator,              'Translator'                  ).
+sa_predicate_term('Volume:',                  volume,                  'Volume'                      ).
+sa_predicate_term('Year:',                    year,                    'Year'                        ).
 sa_predicate_term(Name, _, _):-
   nonvar(Name),
   gtrace, %DEB

@@ -19,8 +19,8 @@ Web front-end for the Social Web of the Avant-Garde.
 :- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
 :- use_module(library(lists)).
+:- use_module(library(random)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(math(random_ext)).
 :- use_module(rdf(rdf_datatype)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(swag(sa_scrape)).
@@ -44,7 +44,7 @@ http:location(img, root(img), []).
 :- db_add_novel(user:file_search_path(img, swag('Images'))).
 :- http_handler(img(.), serve_files_in_directory(img), [prefix,priority(10)]).
 
-:- initialization(init_swag).
+%:- initialization(init_swag).
 
 
 
@@ -78,7 +78,7 @@ image_rows(Length-Pairs, Cols, Rows1) -->
 image_row(_-_, 0) --> !.
 image_row(Length-Pairs, Cols1) -->
   {
-    random_betwixt(1, Length, Index),
+    random_between(1, Length, Index),
     nth1(Index, Pairs, Author-Base),
     Cols2 is Cols1 - 1
   },
