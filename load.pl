@@ -1,16 +1,16 @@
-% The load file for the Sackner Archive project.
+% The load file for the SWAG project.
 
 :- multifile(user:project_name/1).
-user:project_name('SacknerArchive').
+user:project_name('SWAG').
 
-:- initialization(load_sa).
+:- initialization(load_swag).
 
-load_sa:-
+load_swag:-
   % Entry point.
-  source_file(load_sa, ThisFile),
+  source_file(load_swag, ThisFile),
   file_directory_name(ThisFile, ThisDir),
 
-  % SA
-  assert(user:file_search_path(sa, ThisDir)),
-  use_module(sa(sa_web)).
+  % SWAG
+  assert(user:file_search_path(swag, ThisDir)),
+  use_module(swag(swag)).
 

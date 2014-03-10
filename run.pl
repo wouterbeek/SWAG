@@ -1,17 +1,17 @@
-% The run file for the Sackner Archives project.
+% The run file for the SWAG project.
 
-:- initialization(run_sa).
+:- initialization(run_swag).
 
-run_sa:-
+run_swag:-
   % Entry point.
-  source_file(run_sa, ThisFile),
+  source_file(run_swag, ThisFile),
   file_directory_name(ThisFile, ThisDir),
   assert(user:file_search_path(project, ThisDir)),
   
   % PGC
   load_pgc(project),
   
-  % STCN load file.
+  % SWAG load file.
   ensure_loaded(load).
 
 load_pgc(_Project):-
