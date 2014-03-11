@@ -48,7 +48,7 @@ sa_assert_value(Entry, Predicate, dimensions, Value, Graph):- !,
     rdf_assert_datatype(BNode, swag:depth, xsd:decimal, Depth, Graph)
   ).
 sa_assert_value(Entry, Predicate, Type, Value1, Graph):-
-  convert_to_xsd(Type, Value1, Datatype, Value2),
+  xsd_value(Type, Value1, Datatype, Value2),
   rdf_assert_datatype(Entry, Predicate, Datatype, Value2, Graph), !.
 sa_assert_value(Entry, Predicate, Type, Value, Graph):-
   gtrace, %DEB

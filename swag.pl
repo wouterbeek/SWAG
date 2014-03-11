@@ -9,14 +9,11 @@ Web front-end for the Social Web of the Avant-Garde.
 @version 2013/04, 2014/01, 2014/03
 */
 
-:- use_module(generics(atom_ext)).
 :- use_module(generics(db_ext)).
-:- use_module(html(html)).
 :- use_module(html(html_image)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_path)).
 :- use_module(library(http/http_server_files)).
 :- use_module(library(lists)).
 :- use_module(library(random)).
@@ -25,7 +22,7 @@ Web front-end for the Social Web of the Avant-Garde.
 :- use_module(rdf(rdf_serial)).
 :- use_module(swag(sa_scrape)).
 :- use_module(server(web_modules)).
-:- use_module(void(void_file)).
+
 :- use_module(xml(xml_namespace)).
 
 :- http_handler(root(swag), swag, [prefix,priority(0),spawn(show_some_images)]).

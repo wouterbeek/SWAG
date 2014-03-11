@@ -20,9 +20,7 @@ by scraping an online Web site.
 
 :- use_module(generics(atom_ext)).
 :- use_module(html(html)).
-:- use_module(html(html_image)).
 :- use_module(library(apply)).
-:- use_module(library(http/http_open)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
