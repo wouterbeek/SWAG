@@ -16,6 +16,7 @@ Automated cleaning of the Sackner Archives dataset.
 :- use_module(dcg(dcg_content)).
 :- use_module(dcg(dcg_generic)).
 :- use_module(xsd(xsd)).
+:- use_module(xsd(xsd_clean)).
 :- use_module(xsd(xsd_decimal)).
 :- use_module(xsd(xsd_gYear)).
 
@@ -47,17 +48,15 @@ sa_assert_value(Entry, Predicate, dimensions, Value, Graph):- !,
   ;
     rdf_assert_datatype(BNode, swag:depth, xsd:decimal, Depth, Graph)
   ).
-sa_assert_value(Entry, Predicate, Type, Value1, Graph):-
-  xsd_value(Type, Value1, Datatype, Value2),
+sa_assert_value(Entry, Predicate, DatatypeName, Value1, Graph):-
+  rdf_datatype(DatatypeName, Datatype),
+  xsd_value(DatatypeName, Value1, Value2),
   rdf_assert_datatype(Entry, Predicate, Datatype, Value2, Graph), !.
-sa_assert_value(Entry, Predicate, Type, Value, Graph):-
+sa_assert_value(Entry, Predicate, Datatype, Value, Graph):-
   gtrace, %DEB
-  format(user_output, '<~w,~w,~w^^~w>', [Entry,Predicate,Value,Type]),
-  sa_assert_value(Entry, Predicate, Type, Value, Graph).
+  format(user_output, '<~w,~w,~w^^~w>', [Entry,Predicate,Value,Datatype]),
+  sa_assert_value(Entry, Predicate, Datatype, Value, Graph).
 
-year(Year) -->
-  (`c.`, blanks ; []),
-  gYearLexicalRep(dateTime(Year, _, _, _, _, _, _)).
 
 dimensions(Height, Width, Depth) -->
   decimalLexicalRep(Height),
@@ -74,6 +73,11 @@ dimensions_separator -->
   blanks,
   `x`,
   blanks.
+
+
+year(Year) -->
+  (`c.`, blanks ; []),
+  gYearLexicalRep(dateTime(Year, _, _, _, _, _, _)).
 
 
 sa_predicate_type(number_of_artist_proofs, integer   ).
