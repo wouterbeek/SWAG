@@ -57,15 +57,15 @@ sa_assert_value(Entry, Predicate, Type, Value, Graph):-
 
 year(Year) -->
   (`c.`, blanks ; []),
-  gYearLexicalRep(dateTime(Year, _, _, _, _, _, _)).
+  xsd_gYear_lexical_map(dateTime(Year, _, _, _, _, _, _)).
 
 dimensions(Height, Width, Depth) -->
-  decimalLexicalRep(Height),
+  xsd_decimal_lexical_map(Height),
   dimensions_separator,
-  decimalLexicalRep(Width),
+  xsd_decimal_lexical_map(Width),
   (
     dimensions_separator,
-    decimalLexicalRep(Depth)
+    xsd_decimal_lexical_map(Depth)
   ;
     []
   ).
