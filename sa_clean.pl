@@ -41,17 +41,17 @@ sa_assert_value(Entry, Predicate, dimensions, Value, Graph):- !,
   once(dcg_phrase(dimensions(Height, Width, Depth), Value)),
   rdf_bnode(BNode),
   rdf_assert(Entry, Predicate, BNode, Graph),
-  rdf_assert_datatype(BNode, swag:height, xsd:decimal, Height, Graph),
-  rdf_assert_datatype(BNode, swag:width, xsd:decimal, Width, Graph),
+  rdf_assert_datatype(BNode, swag:height, Height, xsd:decimal, Graph),
+  rdf_assert_datatype(BNode, swag:width, Width, xsd:decimal, Graph),
   (
     var(Depth), !
   ;
-    rdf_assert_datatype(BNode, swag:depth, xsd:decimal, Depth, Graph)
+    rdf_assert_datatype(BNode, swag:depth, Depth, xsd:decimal, Graph)
   ).
 sa_assert_value(Entry, Predicate, DatatypeName, Value1, Graph):-
   rdf_datatype(DatatypeName, Datatype),
   xsd_value(DatatypeName, Value1, Value2),
-  rdf_assert_datatype(Entry, Predicate, Datatype, Value2, Graph), !.
+  rdf_assert_datatype(Entry, Predicate, Value2, Datatype, Graph), !.
 sa_assert_value(Entry, Predicate, Datatype, Value, Graph):-
   gtrace, %DEB
   format(user_output, '<~w,~w,~w^^~w>', [Entry,Predicate,Value,Datatype]),

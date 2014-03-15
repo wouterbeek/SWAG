@@ -26,10 +26,11 @@ by scraping an online Web site.
 :- use_module(library(uri)).
 :- use_module(library(xpath)).
 :- use_module(rdf(rdf_build)).
-:- use_module(rdf(rdf_datatype)).
+:- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf(rdf_image)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(rdfs(rdfs_build)).
-:- use_module(rdfs(rdfs_label_build)).
+:- use_module(rdfs(rdfs_label_ext)).
 :- use_module(swag(swag)).
 
 :- use_module(xml(xml_namespace)).
@@ -91,7 +92,7 @@ sa_scrape_entry(Graph, EntryId1):-
   format_integer(EntryId1, 5, EntryId2),
 
   rdf_create_next_resource(swag, 'Entry', Entry, Graph),
-  rdf_assert_datatype(Entry, swag:original_id, xsd:integer, EntryId2, Graph),
+  rdf_assert_datatype(Entry, swag:original_id, EntryId2, xsd:integer, Graph),
 
   atomic_concat('413201333230~', EntryId2, TemporaryNumber),
   uri_components(
@@ -149,7 +150,7 @@ sa_nvpair(Table, PredicateName2, Value2):-
 
 sa_assert_triple(Graph, Entry, PredicateName-Value):-
   rdf_global_id(swag:PredicateName, Predicate),
-  rdf_assert_datatype(Entry, Predicate, xsd:string, Value, Graph).
+  rdf_assert_string(Entry, Predicate, Value, Graph).
 
 
 %! crawl_image(+Graph:atom, +Entry:integer, -ImageName:atom) is det.
