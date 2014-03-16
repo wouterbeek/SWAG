@@ -49,7 +49,7 @@ sa_assert_value(Entry, Predicate, dimensions, Value, Graph):- !,
     rdf_assert_datatype(BNode, swag:depth, Depth, xsd:decimal, Graph)
   ).
 sa_assert_value(Entry, Predicate, DatatypeName, Value1, Graph):-
-  rdf_datatype(DatatypeName, Datatype),
+  xsd_datatype(DatatypeName, Datatype),
   xsd_value(DatatypeName, Value1, Value2),
   rdf_assert_datatype(Entry, Predicate, Value2, Datatype, Graph), !.
 sa_assert_value(Entry, Predicate, Datatype, Value, Graph):-

@@ -18,7 +18,7 @@ Web front-end for the Social Web of the Avant-Garde.
 :- use_module(library(lists)).
 :- use_module(library(random)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(rdf(rdf_serial)).
 :- use_module(swag(sa_scrape)).
 :- use_module(server(web_modules)).
@@ -55,7 +55,7 @@ image_grid(Cols, Rows) -->
       Author-Base,
       (
         rdf(Entry, swag:image, literal(type(Datatype, File)), 'CP_Entry'),
-        once(rdf_datatype(Entry, swag:author, string, Author, 'CP_Entry')),
+        once(rdf_string(Entry, swag:author, Author, 'CP_Entry')),
         file_base_name(File, Base)
       ),
       Pairs
