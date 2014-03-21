@@ -41,8 +41,6 @@ http:location(img, root(img), []).
 :- db_add_novel(user:file_search_path(img, swag('Images'))).
 :- http_handler(img(.), serve_files_in_directory(img), [prefix,priority(10)]).
 
-%:- initialization(init_swag).
-
 
 
 swag(_Request):-
