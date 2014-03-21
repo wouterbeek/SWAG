@@ -1,7 +1,7 @@
 % The load file for the SWAG project.
 
-:- multifile(user:project_name/1).
-user:project_name('SWAG').
+:- multifile(user:project/2).
+user:project('SWAG', 'The Social Web of the Avant-Garde.').
 
 :- initialization(load_swag).
 
