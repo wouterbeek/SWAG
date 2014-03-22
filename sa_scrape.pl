@@ -23,6 +23,7 @@ by scraping an online Web site.
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(thread)).
 :- use_module(library(uri)).
 :- use_module(library(xpath)).
 :- use_module(rdf(rdf_build)).
@@ -32,8 +33,9 @@ by scraping an online Web site.
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdfs(rdfs_label_ext)).
 :- use_module(swag(swag)).
-
 :- use_module(xml(xml_namespace)).
+:- use_module(xsd(xsd)).
+
 :- xml_register_namespace(swag, 'http://www.wouterbeek.com/SWAG/').
 
 
@@ -45,6 +47,7 @@ sa_scrape(Graph):-
   assert_schema(Graph),
   sa_scrape(Graph, 0).
 
+
 %! sa_scrape(+Graph:atom, +FirstEntry:nonneg) is det.
 % Crawls the Sackner Archive as of the given entry number.
 % This allows for easy continuing of crawls
@@ -55,17 +58,17 @@ sa_scrape(Graph, FirstNumber):-
   rdfs_assert_label(swag:'Entry', 'Entry in the Sackner Archive', Graph),
 
   rdfs_assert_subclass(swag:'Property', rdf:'Property', Graph),
-  rdfs_assert_label(
-    swag:'Property',
-    'Property used in the Sackner Archive',
-    Graph
-  ),
+  rdfs_assert_label(swag:'Property', 'Property used in the Sackner Archive',
+    Graph),
 
   % The last entry has identifier 50,122, as of 2013/03/14.
-  forall(
+  findall(
+    sa_scrape_entry(Graph, Entry),
     between(FirstNumber, 100000, Entry),
-    sa_scrape_entry(Graph, Entry)
-  ).
+    Goals
+  ),
+  maplist(call, Goals).
+  %%%%concurrent(25, Goals, []).
 
 
 %! assert_schema(+Graph:atom) is det.
@@ -92,7 +95,8 @@ sa_scrape_entry(Graph, EntryId1):-
   format_integer(EntryId1, 5, EntryId2),
 
   rdf_create_next_resource(swag, 'Entry', Entry, Graph),
-  rdf_assert_datatype(Entry, swag:original_id, EntryId2, xsd:integer, Graph),
+  xsd_lexical_map(xsd:integer, EntryId2, XsdValue),
+  rdf_assert_datatype(Entry, swag:original_id, XsdValue, xsd:integer, Graph),
 
   atomic_concat('413201333230~', EntryId2, TemporaryNumber),
   uri_components(
@@ -136,13 +140,15 @@ sa_nvpair(Table, PredicateName2, Value2):-
   PredicateName1 \== '',
   xpath_chk(Row, //td(2)/p, P),
   (
-    xpath_chk(P, //input(@value), Value1)
+    xpath_chk(P, //input(@value), Values1)
   ;
-    xpath_chk(P, //textarea(normalize_space), Values1),
-    % Some values are enumarations separated by dashes.
-    atomic_list_concat(Values2, ' --', Values1),
-    member(Value1, Values2)
+    xpath_chk(P, //textarea(normalize_space), Values1)
   ),
+  
+  % Some values are enumarations separated by dashes.
+  atomic_list_concat(Values2, ' --', Values1),
+  member(Value1, Values2),
+  
   % Some values have superfluous spaces pre- and/or postfixed.
   strip_atom([' '], Value1, Value2),
   once(sa_predicate_term(PredicateName1, PredicateName2, _)).
