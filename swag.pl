@@ -62,7 +62,7 @@ swag(_Request):-
 swag_body -->
   {
     site_name(Site),
-    random_pairs(5, Pairs)
+    random_pairs(25, Pairs)
   },
   html([
     div(id=page_title, Site),
@@ -103,10 +103,10 @@ random_pairs(N1, Max, Pairs1):-
   random_between(1, Max, I),
   rdf_datatype(Entry, swag:original_id, I, xsd:integer, _),
   (
-    rdf(Entry, swag:image, Url)
+    rdf(Entry, swag:image, Url),
+    rdf_string(Entry, swag:author, Caption, _)
   ->
-    rdf_string(Entry, swag:author, Caption, _),
-    url_to_file_name(Url, File), !,
+    url_to_file_name(Url, File),
     N2 is N1 - 1,
     Pairs1 = [Caption-File|Pairs2],
     random_pairs(N2, Max, Pairs2)
