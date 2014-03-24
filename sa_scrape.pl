@@ -100,7 +100,7 @@ sa_scrape_entry(Graph, EntryId1):-
 
   atomic_concat('413201333230~', EntryId2, TemporaryNumber),
   uri_components(
-    DescriptionURI,
+    DescriptionUri,
     uri_components(
       http,
       'ww3.rediscov.com',
@@ -109,9 +109,13 @@ sa_scrape_entry(Graph, EntryId1):-
       ''
     )
   ),
-  download_html([html_dialect(html4)], DescriptionURI, HTML),
+  download_html(
+    [html_dialect(html4),never_give_up(true)],
+    DescriptionUri,
+    Html
+  ),
 
-  xpath_chk(HTML, //table, Table),
+  xpath_chk(Html, //table, Table),
 
   findall(
     PredicateName-Value,

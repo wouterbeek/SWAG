@@ -10,7 +10,9 @@ Web front-end for the Social Web of the Avant-Garde.
 */
 
 :- use_module(generics(db_ext)).
+:- use_module(generics(uri_ext)).
 :- use_module(html(html_image)).
+:- use_module(library(aggregate)).
 :- use_module(library(http/html_head)).
 :- use_module(library(http/html_write)).
 :- use_module(library(http/http_dispatch)).
@@ -18,80 +20,64 @@ Web front-end for the Social Web of the Avant-Garde.
 :- use_module(library(lists)).
 :- use_module(library(random)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(rdf_term(rdf_string)).
+:- use_module(library(semweb/rdfs)).
 :- use_module(rdf(rdf_serial)).
+:- use_module(rdf_term(rdf_datatype)).
+:- use_module(rdf_term(rdf_string)).
 :- use_module(swag(sa_scrape)).
 :- use_module(server(web_modules)).
-
 :- use_module(xml(xml_namespace)).
 
-:- http_handler(root(swag), swag, [prefix,priority(0),spawn(show_some_images)]).
-
 :- xml_register_namespace(swag, 'http://www.wouterbeek.com/SWAG/').
+
+:- http_handler(root(swag), swag, [prefix]).
+
+:- web_module_add('SWAG', swag).
 
 % /css
 http:location(css, root(css), []).
 :- db_add_novel(user:file_search_path(css, server(css))).
-:- db_add_novel(user:file_search_path(css, swag(css))).
+%:- db_add_novel(user:file_search_path(css, swag(css))).
 :- http_handler(css(.), serve_files_in_directory(css), [prefix,priority(10)]).
-:- html_resource(css('sackner_archive.css'), []).
+:- html_resource(css('image.css'), []).
+:- html_resource(css('page.css'), []).
 
 % /img
 http:location(img, root(img), []).
-:- db_add_novel(user:file_search_path(img, swag('Images'))).
-:- http_handler(img(.), serve_files_in_directory(img), [prefix,priority(10)]).
+:- db_add_novel(user:file_search_path(img, data(.))).
+:- http_handler(
+  img(.),
+  serve_files_in_directory(data),
+  [prefix,priority(10)]
+).
+
+:- initialization(thread_create(load_swag, _, [])).
 
 
 
 swag(_Request):-
-  reply_html_page(app_style, \swag_head('Grid'), \image_grid(5, 5)).
+  reply_html_page(app_style, \swag_head('Grid'), \swag_body).
 
-image_grid(Cols, Rows) -->
+
+swag_body -->
   {
-     rdf_global_id(prasem:image, Datatype),
-    findall(
-      Author-Base,
-      (
-        rdf(Entry, swag:image, literal(type(Datatype, File)), 'CP_Entry'),
-        once(rdf_string(Entry, swag:author, Author, 'CP_Entry')),
-        file_base_name(File, Base)
-      ),
-      Pairs
-    ),
-    length(Pairs, Length)
-  },
-  html(div(class=image_group, \image_rows(Length-Pairs, Cols, Rows))).
-
-image_rows(_-_, _, 0) --> !.
-image_rows(Length-Pairs, Cols, Rows1) -->
-  {Rows2 is Rows1 - 1},
-  html([
-    div(class=image_row, \image_row(Length-Pairs, Cols)),
-    \image_rows(Length-Pairs, Cols, Rows2)
-  ]).
-
-image_row(_-_, 0) --> !.
-image_row(Length-Pairs, Cols1) -->
-  {
-    random_between(1, Length, Index),
-    nth1(Index, Pairs, Author-Base),
-    Cols2 is Cols1 - 1
+    site_name(Site),
+    random_pairs(5, Pairs)
   },
   html([
-    \html_image([], Author, [], Base),
-    \image_row(Length-Pairs, Cols2)
+    div(id=page_title, Site),
+    \html_image_thumbnail_box_grid(5, 5, 350, 350, Pairs)
   ]).
 
-swag_head(String) -->
+
+swag_head(Section) -->
+  {site_name(Site)},
   html([
-    title('The Social Web of the Avant-Garde (0.0.1) -- ',String),
-    \html_requires(css('sackner_archive.css'))
+    title([Site,' -- ',Section]),
+    \html_requires(css('image.css')),
+    \html_requires(css('page.css'))
   ]).
 
-
-init_swag:-
-  load_swag,
-  web_module_add('SWAG', swag).
 
 load_swag:-
   rdf_graph(swag), !.
@@ -106,4 +92,28 @@ load_swag:-
   sa_scrape(swag),
   absolute_file_name(data(swag), File, [access(write),file_type(turtle)]),
   rdf_save([format(turtle)], swag, File).
+
+
+random_pairs(N, Pairs):-
+  aggregate_all(count, rdfs_individual_of(_, swag:'Entry'), Max),
+  random_pairs(N, Max, Pairs).
+
+random_pairs(0, _, []):- !.
+random_pairs(N1, Max, Pairs1):-
+  random_between(1, Max, I),
+  rdf_datatype(Entry, swag:original_id, I, xsd:integer, _),
+  (
+    rdf(Entry, swag:image, Url)
+  ->
+    rdf_string(Entry, swag:author, Caption, _),
+    url_to_file_name(Url, File), !,
+    N2 is N1 - 1,
+    Pairs1 = [Caption-File|Pairs2],
+    random_pairs(N2, Max, Pairs2)
+  ;
+    random_pairs(N1, Max, Pairs1)
+  ).
+
+
+site_name('The Social Web of the Avant-Garde (pre-alpha)').
 
