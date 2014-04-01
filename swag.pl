@@ -21,7 +21,7 @@ Web front-end for the Social Web of the Avant-Garde.
 :- use_module(library(random)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(rdf(rdf_serial)).
+:- use_module(rdf_file(rdf_serial)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_string)).
 :- use_module(swag(sa_scrape)).
