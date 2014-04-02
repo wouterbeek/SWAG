@@ -33,10 +33,8 @@ by scraping an online Web site.
 :- use_module(rdfs(rdfs_build)).
 :- use_module(rdfs(rdfs_label_ext)).
 :- use_module(swag(swag)).
-:- use_module(xml(xml_namespace)).
+:- use_module(swag(swag_db)).
 :- use_module(xsd(xsd)).
-
-:- xml_register_namespace(swag, 'http://www.wouterbeek.com/SWAG/').
 
 
 

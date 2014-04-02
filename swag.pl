@@ -6,7 +6,7 @@ The Social Web of the Avant-Garde.
 Web front-end for the Social Web of the Avant-Garde.
 
 @author Wouter Beek
-@version 2013/04, 2014/01, 2014/03
+@version 2013/04, 2014/01, 2014/03-2014/04
 */
 
 :- use_module(generics(db_ext)).
@@ -24,11 +24,10 @@ Web front-end for the Social Web of the Avant-Garde.
 :- use_module(rdf_file(rdf_serial)).
 :- use_module(rdf_term(rdf_datatype)).
 :- use_module(rdf_term(rdf_string)).
-:- use_module(swag(sa_scrape)).
 :- use_module(server(web_modules)).
-:- use_module(xml(xml_namespace)).
-
-:- xml_register_namespace(swag, 'http://www.wouterbeek.com/SWAG/').
+:- use_module(swag(sa_clean)).
+:- use_module(swag(sa_scrape)).
+:- use_module(swag(swag_db)).
 
 :- http_handler(root(swag), swag, [prefix]).
 
@@ -51,8 +50,7 @@ http:location(img, root(img), []).
   [prefix,priority(10)]
 ).
 
-:- initialization(thread_create(load_swag, _, [])).
-
+:- initialization(init_swag).
 
 
 swag(_Request):-
@@ -79,16 +77,16 @@ swag_head(Section) -->
   ]).
 
 
-load_swag:-
+init_swag:-
   rdf_graph(swag), !.
-load_swag:-
+init_swag:-
   absolute_file_name(
     data(swag),
     File,
     [access(read),file_errors(fail),file_type(turtle)]
-  ),
+  ), !,
   rdf_load([format(turtle)], swag, File).
-load_swag:-
+init_swag:-
   sa_scrape(swag),
   absolute_file_name(data(swag), File, [access(write),file_type(turtle)]),
   rdf_save([format(turtle)], swag, File).

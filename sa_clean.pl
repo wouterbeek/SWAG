@@ -10,29 +10,54 @@
 Automated cleaning of the Sackner Archives dataset.
 
 @author Wouter Beek
-@version 2014/03
+@version 2014/03-2014/04
 */
 
-:- use_module(dcg(dcg_content)).
-:- use_module(dcg(dcg_generic)).
-:- use_module(xsd(xsd)).
+:- use_module(library(lists)).
+:- use_module(library(semweb/rdf_db)).
+:- use_module(rdf_term(rdf_literal)).
+:- use_module(rdf_term(rdf_literal_build)).
+:- use_module(rdf_web(rdf_store_table)).
+:- use_module(swag(swag_db)).
 :- use_module(xsd(xsd_clean)).
-:- use_module(xsd(xsd_decimal)).
-:- use_module(xsd(xsd_gYear)).
+
+:- rdf_meta(sa_clean(r,r,r,+)).
+:- rdf_meta(sa_clean_preview(r,r,r,+)).
 
 
 
-sa_clean(Graph):-
+sa_clean(G):-
   forall(
-    sa_predicate_type(Predicate, _),
-    sa_clean(Graph, Predicate)
+    rdf_predicate(P, G),
+    sa_clean_preview(P, xsd:string, xsd:integer, G)
   ).
 
-sa_clean(Graph, Predicate):-
-  sa_predicate_type(Predicate, Type),
-  
+
+sa_clean(P, FromDatatype, ToDatatype, G):-
+  forall(
+    rdf_literal(S, P, FromLexicalForm, FromDatatype, G),
+    (
+      xsd_convert_value(FromDatatype, FromLexicalForm, ToDatatype, ToLexicalForm),
+      rdf_assert_literal(S, P, ToLexicalForm, ToDatatype, G),
+      rdf_retractall_literal(S, P, FromLexicalForm, FromDatatype, G)
+    )
+  ).
 
 
+sa_clean_preview(P, FromDatatype, ToDatatype, G):-
+  findall(
+    [S,P,FromLexicalForm,FromDatatype,ToDatatype,ToLexicalForm,G],
+    (
+      rdf_literal(S, P, FromLexicalForm, FromDatatype, G),
+      xsd_convert_value(FromDatatype, FromLexicalForm, ToDatatype, ToLexicalForm)
+    ),
+    Rows
+  ),
+  rdf_store_rows(Rows).
+
+
+
+/*
 % Not all years are compliant with `xsd:gYear`.
 sa_assert_value(Entry, Predicate, year, Value1, Graph):-
   once(dcg_phrase(year(Value2), Value1)), !,
@@ -118,3 +143,5 @@ sa_predicate_type(number_of_copies,        integer   ).
 sa_predicate_type(translator,              string    ).
 sa_predicate_type(volume,                  string    ).
 sa_predicate_type(year,                    year      ).
+*/
+
