@@ -13,12 +13,21 @@ Automated cleaning of the Sackner Archives dataset.
 @version 2014/03-2014/04
 */
 
+:- use_module(library(aggregate)).
+:- use_module(library(http/html_write)).
+:- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
+:- use_module(library(semweb/rdfs)).
+:- use_module(lod(wb)).
 :- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf_term(rdf_literal_build)).
+:- use_module(rdf_term(rdf_term)).
 :- use_module(rdf_web(rdf_store_table)).
+:- use_module(rdf_web(rdf_term_html)).
+:- use_module(rdfs(rdfs_read)).
 :- use_module(swag(swag_db)).
+:- use_module(xsd(xsd)).
 :- use_module(xsd(xsd_clean)).
 
 :- rdf_meta(sa_clean(r,r,r,+)).
@@ -28,8 +37,13 @@ Automated cleaning of the Sackner Archives dataset.
 
 sa_clean(G):-
   forall(
-    rdf_predicate(P, G),
-    sa_clean_preview(P, xsd:string, xsd:integer, G)
+    (
+      % @tbd Use rdfs_domain/4 when its done.
+      rdf(P, rdfs:range, Range, G),
+      xsd_datatype(Range),
+      \+ rdf_equal(Range, xsd:string)
+    ),
+    sa_clean_preview(P, xsd:string, Range, G)
   ).
 
 
@@ -46,14 +60,30 @@ sa_clean(P, FromDatatype, ToDatatype, G):-
 
 sa_clean_preview(P, FromDatatype, ToDatatype, G):-
   findall(
-    [S,P,FromLexicalForm,FromDatatype,ToDatatype,ToLexicalForm,G],
+    [S,P,FromLiteral,ToLiteral,G],
     (
       rdf_literal(S, P, FromLexicalForm, FromDatatype, G),
-      xsd_convert_value(FromDatatype, FromLexicalForm, ToDatatype, ToLexicalForm)
+      xsd_convert_value(
+        FromDatatype,
+        FromLexicalForm,
+        ToDatatype,
+        ToLexicalForm
+      ),
+      rdf_literal(FromLiteral, FromLexicalForm, FromDatatype),
+      rdf_literal(ToLiteral, ToLexicalForm, ToDatatype)
     ),
     Rows
   ),
-  rdf_store_rows(Rows).
+  http_location_by_id(rdf_man(literal), Location),
+  rdf_store_rows(
+    html([
+      'Literal term transformations for RDF property ',
+      \rdf_term_html(Location, P),
+      '.'
+    ]),
+    ['Subject','Predicate','Old literal','New literal','Graph'],
+    Rows
+  ).
 
 
 
@@ -106,42 +136,5 @@ dimensions_separator -->
 year(Year) -->
   (`c.`, blanks ; []),
   gYearLexicalRep(dateTime(Year, _, _, _, _, _, _)).
-
-
-sa_predicate_type(number_of_artist_proofs, integer   ).
-sa_predicate_type(number_of_images,        integer   ).
-sa_predicate_type(number_of_art_proofs,    integer   ).
-sa_predicate_type(number_of_letter_copies, integer   ).
-sa_predicate_type(announcement,            string    ).
-sa_predicate_type(annotation,              string    ).
-sa_predicate_type(author,                  string    ).
-sa_predicate_type(catalog,                 string    ).
-sa_predicate_type(city_country,            string    ).
-sa_predicate_type(classification,          string    ).
-sa_predicate_type(container,               string    ).
-sa_predicate_type(contributor,             string    ).
-sa_predicate_type(exhibition_announcement, string    ).
-sa_predicate_type(exhibition_catalog,      string    ).
-sa_predicate_type(dimensions,              dimensions).
-sa_predicate_type(illustration_bwc,        string    ).
-sa_predicate_type(inscribed,               string    ).
-sa_predicate_type(language,                string    ).
-sa_predicate_type(media,                   string    ).
-sa_predicate_type(nationality,             string    ).
-sa_predicate_type(number_of_dups,          decimal   ).
-sa_predicate_type(number_series_month,     string    ).
-sa_predicate_type(number_of_pages,         integer   ).
-sa_predicate_type(periodical,              string    ).
-sa_predicate_type(publisher,               string    ).
-sa_predicate_type(purchase_year,           year      ).
-sa_predicate_type(series,                  string    ).
-sa_predicate_type(signature,               string    ).
-sa_predicate_type(subtitle_author,         string    ).
-sa_predicate_type(subtitle,                string    ).
-sa_predicate_type(title,                   string    ).
-sa_predicate_type(number_of_copies,        integer   ).
-sa_predicate_type(translator,              string    ).
-sa_predicate_type(volume,                  string    ).
-sa_predicate_type(year,                    year      ).
 */
 

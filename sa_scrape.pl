@@ -41,9 +41,9 @@ by scraping an online Web site.
 %! sa_scrape(+Graph:atom) is det.
 % Crawls the Sackner Archive for all the entries that it contains.
 
-sa_scrape(Graph):-
-  assert_schema(Graph),
-  sa_scrape(Graph, 0).
+sa_scrape(G):-
+  sa_assert_schema(G),
+  sa_scrape(G, 0).
 
 
 %! sa_scrape(+Graph:atom, +FirstEntry:nonneg) is det.
@@ -67,21 +67,6 @@ sa_scrape(Graph, FirstNumber):-
   ),
   maplist(call, Goals).
   %%%%concurrent(25, Goals, []).
-
-
-%! assert_schema(+Graph:atom) is det.
-% Asserts the RDFS schema for the Sackner Archive dataset.
-
-assert_schema(Graph):-
-  % Assert descriptive labels for the properties.
-  forall(
-    sa_predicate_term(_, PropertyName1, RdfsLabel),
-    (
-      atomic_list_concat(['Property',PropertyName1], '/', PropertyName2),
-      rdf_global_id(swag:PropertyName2, Property),
-      rdfs_assert_label(Property, en, RdfsLabel, Graph)
-    )
-  ).
 
 
 %% sa_scrape_entry(+Graph:atom, +Entry:nonneg) is det.
@@ -154,6 +139,90 @@ sa_nvpair(Table, PredicateName2, Value2):-
   % Some values have superfluous spaces pre- and/or postfixed.
   strip_atom([' '], Value1, Value2),
   once(sa_predicate_term(PredicateName1, PredicateName2, _)).
+
+
+sa_assert_schema(G):-
+  % Assert descriptive labels for the properties.
+  forall(
+    sa_predicate_term(_, PropertyName1, RdfsLabel),
+    (
+      atomic_list_concat(['Property',PropertyName1], '/', PropertyName2),
+      rdf_global_id(swag:PropertyName2, Property),
+      rdfs_assert_label(Property, en, RdfsLabel, G)
+    )
+  ),
+  
+  % Assert the domain and range restrictions of the properties.
+  rdfs_assert_domain(swag:number_of_artist_proofs, swag:'Entry', G),
+  rdfs_assert_range( swag:number_of_artist_proofs, xsd:integer,  G),
+  rdfs_assert_domain(swag:number_of_images,        swag:'Entry', G),
+  rdfs_assert_range( swag:number_of_images,        xsd:integer,  G),
+  rdfs_assert_domain(swag:number_of_art_proofs,    swag:'Entry', G),
+  rdfs_assert_range( swag:number_of_art_proofs,    xsd:integer,  G),
+  rdfs_assert_domain(swag:number_of_letter_copies, swag:'Entry', G),
+  rdfs_assert_range( swag:number_of_letter_copies, xsd:integer,  G),
+  rdfs_assert_domain(swag:announcement,            swag:'Entry', G),
+  rdfs_assert_range( swag:announcement,            xsd:string,   G),
+  rdfs_assert_domain(swag:annotation,              swag:'Entry', G),
+  rdfs_assert_range( swag:annotation,              xsd:string,   G),
+  rdfs_assert_domain(swag:author,                  swag:'Entry', G),
+  rdfs_assert_range( swag:author,                  xsd:string,   G),
+  rdfs_assert_domain(swag:catalog,                 swag:'Entry', G),
+  rdfs_assert_range( swag:catalog,                 xsd:string,   G),
+  rdfs_assert_domain(swag:city_country,            swag:'Entry', G),
+  rdfs_assert_range( swag:city_country,            xsd:string,   G),
+  rdfs_assert_domain(swag:classification,          swag:'Entry', G),
+  rdfs_assert_range( swag:classification,          xsd:string,   G),
+  rdfs_assert_domain(swag:container,               swag:'Entry', G),
+  rdfs_assert_range( swag:container,               xsd:string,   G),
+  rdfs_assert_domain(swag:contributor,             swag:'Entry', G),
+  rdfs_assert_range( swag:contributor,             xsd:string,   G),
+  rdfs_assert_domain(swag:exhibition_announcement, swag:'Entry', G),
+  rdfs_assert_range( swag:exhibition_announcement, xsd:string,   G),
+  rdfs_assert_domain(swag:exhibition_catalog,      swag:'Entry', G),
+  rdfs_assert_range( swag:exhibition_catalog,      xsd:string,   G),
+  rdfs_assert_domain(swag:dimensions,              swag:'Entry', G),
+  rdfs_assert_range( swag:dimensions,              wb:box,       G),
+  rdfs_assert_domain(swag:illustration_bwc,        swag:'Entry', G),
+  rdfs_assert_range( swag:illustration_bwc,        xsd:string,   G),
+  rdfs_assert_domain(swag:inscribed,               swag:'Entry', G),
+  rdfs_assert_range( swag:inscribed,               xsd:string,   G),
+  rdfs_assert_domain(swag:language,                swag:'Entry', G),
+  rdfs_assert_range( swag:language,                xsd:string,   G),
+  rdfs_assert_domain(swag:media,                   swag:'Entry', G),
+  rdfs_assert_range( swag:media,                   xsd:string,   G),
+  rdfs_assert_domain(swag:nationality,             swag:'Entry', G),
+  rdfs_assert_range( swag:nationality,             xsd:string,   G),
+  rdfs_assert_domain(swag:number_of_dups,          swag:'Entry', G),
+  rdfs_assert_range( swag:number_of_dups,          xsd:decimal,  G),
+  rdfs_assert_domain(swag:number_series_month,     swag:'Entry', G),
+  rdfs_assert_range( swag:number_series_month,     xsd:string,   G),
+  rdfs_assert_domain(swag:number_of_pages,         swag:'Entry', G),
+  rdfs_assert_range( swag:number_of_pages,         xsd:integer,  G),
+  rdfs_assert_domain(swag:periodical,              swag:'Entry', G),
+  rdfs_assert_range( swag:periodical,              xsd:string,   G),
+  rdfs_assert_domain(swag:publisher,               swag:'Entry', G),
+  rdfs_assert_range( swag:publisher,               xsd:string,   G),
+  rdfs_assert_domain(swag:purchase_year,           swag:'Entry', G),
+  rdfs_assert_range( swag:purchase_year,           xsd:gYear,    G),
+  rdfs_assert_domain(swag:series,                  swag:'Entry', G),
+  rdfs_assert_range( swag:series,                  xsd:string,   G),
+  rdfs_assert_domain(swag:signature,               swag:'Entry', G),
+  rdfs_assert_range( swag:signature,               xsd:string,   G),
+  rdfs_assert_domain(swag:subtitle_author,         swag:'Entry', G),
+  rdfs_assert_range( swag:subtitle_author,         xsd:string,   G),
+  rdfs_assert_domain(swag:subtitle,                swag:'Entry', G),
+  rdfs_assert_range( swag:subtitle,                xsd:string,   G),
+  rdfs_assert_domain(swag:title,                   swag:'Entry', G),
+  rdfs_assert_range( swag:title,                   xsd:string,   G),
+  rdfs_assert_domain(swag:number_of_copies,        swag:'Entry', G),
+  rdfs_assert_range( swag:number_of_copies,        xsd:integer,  G),
+  rdfs_assert_domain(swag:translator,              swag:'Entry', G),
+  rdfs_assert_range( swag:translator,              xsd:string,   G),
+  rdfs_assert_domain(swag:volume,                  swag:'Entry', G),
+  rdfs_assert_range( swag:volume,                  xsd:string,   G),
+  rdfs_assert_domain(swag:year,                    swag:'Entry', G),
+  rdfs_assert_range( swag:year,                    xsd:gYear,    G).
 
 
 sa_assert_triple(Graph, Entry, PredicateName-Value):-
