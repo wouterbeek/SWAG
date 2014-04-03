@@ -26,12 +26,11 @@ Web front-end for the Social Web of the Avant-Garde.
 :- use_module(rdf_term(rdf_string)).
 :- use_module(server(web_modules)).
 :- use_module(swag(sa_clean)).
-:- use_module(swag(sa_scrape)).
 :- use_module(swag(swag_db)).
 
 :- http_handler(root(swag), swag, [prefix]).
 
-:- web_module_add('SWAG', swag).
+user:web_module('SWAG', swag).
 
 % /css
 http:location(css, root(css), []).
@@ -50,7 +49,6 @@ http:location(img, root(img), []).
   [prefix,priority(10)]
 ).
 
-:- initialization(init_swag).
 
 
 swag(_Request):-
@@ -75,21 +73,6 @@ swag_head(Section) -->
     \html_requires(css('image.css')),
     \html_requires(css('page.css'))
   ]).
-
-
-init_swag:-
-  rdf_graph(swag), !.
-init_swag:-
-  absolute_file_name(
-    data(swag),
-    File,
-    [access(read),file_errors(fail),file_type(turtle)]
-  ), !,
-  rdf_load([format(turtle)], swag, File).
-init_swag:-
-  sa_scrape(swag),
-  absolute_file_name(data(swag), File, [access(write),file_type(turtle)]),
-  rdf_save([format(turtle)], swag, File).
 
 
 random_pairs(N, Pairs):-
