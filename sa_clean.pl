@@ -15,11 +15,11 @@ Automated cleaning of the Sackner Archives dataset.
 
 :- use_module(library(aggregate)).
 :- use_module(library(http/html_write)).
-:- use_module(library(http/http_dispatch)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 :- use_module(lod(wb)).
+:- use_module(rdf(rdf_name)).
 :- use_module(rdf_term(rdf_literal)).
 :- use_module(rdf_term(rdf_literal_build)).
 :- use_module(rdf_term(rdf_term)).
@@ -74,11 +74,10 @@ sa_clean_preview(P, FromDatatype, ToDatatype, G):-
     ),
     Rows
   ),
-  http_location_by_id(rdf_man(literal), Location),
   rdf_store_rows(
     html([
       'Literal term transformations for RDF property ',
-      \rdf_term_html(Location, P),
+      \rdf_term_name(P),
       '.'
     ]),
     ['Subject','Predicate','Old literal','New literal','Graph'],
