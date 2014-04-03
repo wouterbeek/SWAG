@@ -23,7 +23,6 @@ by scraping an online Web site.
 :- use_module(library(apply)).
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
-:- use_module(library(thread)).
 :- use_module(library(uri)).
 :- use_module(library(xpath)).
 :- use_module(rdf(rdf_build)).
@@ -61,12 +60,11 @@ sa_scrape(Graph, FirstNumber):-
 
   % The last entry has identifier 50,122, as of 2013/03/14.
   findall(
-    sa_scrape_entry(Graph, Entry),
+    ignore(catch(sa_scrape_entry(Graph, Entry), E, print_message(error, E))),
     between(FirstNumber, 100000, Entry),
     Goals
   ),
-  %%%%maplist(call, Goals).
-  concurrent(25, Goals, []).
+  maplist(call, Goals).
 
 
 %% sa_scrape_entry(+Graph:atom, +Entry:nonneg) is det.

@@ -77,7 +77,7 @@ sa_clean_preview(P, FromDatatype, ToDatatype, G):-
   rdf_store_rows(
     html([
       'Literal term transformations for RDF property ',
-      \rdf_term_name(P),
+      \rdf_term_html(rdf_tabular, P),
       '.'
     ]),
     ['Subject','Predicate','Old literal','New literal','Graph'],
