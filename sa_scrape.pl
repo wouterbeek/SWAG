@@ -65,8 +65,8 @@ sa_scrape(Graph, FirstNumber):-
     between(FirstNumber, 100000, Entry),
     Goals
   ),
-  maplist(call, Goals).
-  %%%%concurrent(25, Goals, []).
+  %%%%maplist(call, Goals).
+  concurrent(25, Goals, []).
 
 
 %% sa_scrape_entry(+Graph:atom, +Entry:nonneg) is det.
@@ -131,11 +131,11 @@ sa_nvpair(Table, PredicateName2, Value2):-
   ;
     xpath_chk(P, //textarea(normalize_space), Values1)
   ),
-  
+
   % Some values are enumarations separated by dashes.
   atomic_list_concat(Values2, ' --', Values1),
   member(Value1, Values2),
-  
+
   % Some values have superfluous spaces pre- and/or postfixed.
   strip_atom([' '], Value1, Value2),
   once(sa_predicate_term(PredicateName1, PredicateName2, _)).
@@ -151,7 +151,7 @@ sa_assert_schema(G):-
       rdfs_assert_label(Property, en, RdfsLabel, G)
     )
   ),
-  
+
   % Assert the domain and range restrictions of the properties.
   rdfs_assert_domain(swag:number_of_artist_proofs, swag:'Entry', G),
   rdfs_assert_range( swag:number_of_artist_proofs, xsd:integer,  G),

@@ -19,7 +19,6 @@
 %  ), !,
 %  rdf_load([format(turtle)], swag, File).
 init_swag:-
-gtrace,
   sa_scrape(swag),
   absolute_file_name(data(swag), File, [access(write),file_type(turtle)]),
   rdf_save([format(turtle)], swag, File).
