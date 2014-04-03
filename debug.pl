@@ -6,9 +6,12 @@
 :- debug(swag).
 
 
+:- set_prolog_flag(xpce_threaded, true).
+:- prolog_ide(thread_monitor).
+
 :- use_module(rdf_file(rdf_serial)).
 :- use_module(swag(sa_scrape)).
-:- initialization(init_swag).
+%:- initialization(init_swag).
 %init_swag:-
 %  rdf_graph(swag), !.
 %init_swag:-
@@ -19,7 +22,7 @@
 %  ), !,
 %  rdf_load([format(turtle)], swag, File).
 init_swag:-
-  sa_scrape(swag),
+  thread_create(sa_scrape(swag), _, []),
   absolute_file_name(data(swag), File, [access(write),file_type(turtle)]),
   rdf_save([format(turtle)], swag, File).
 
