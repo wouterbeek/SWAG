@@ -87,7 +87,7 @@ random_pairs(N1, Max, Pairs1):-
     rdf(Entry, swag:image, Url),
     rdf_string(Entry, swag:author, Caption, _)
   ->
-    url_to_file_name(Url, File),
+    url_to_file_name([], Url, File),
     N2 is N1 - 1,
     Pairs1 = [Caption-File|Pairs2],
     random_pairs(N2, Max, Pairs2)
