@@ -90,11 +90,7 @@ sa_scrape_entry(Graph, EntryId1):-
       ''
     )
   ),
-  download_html(
-    [html_dialect(html4),never_give_up(true)],
-    DescriptionUri,
-    Html
-  ),
+  download_html([html_dialect(html4)], DescriptionUri, Html),
 
   xpath_chk(Html, //table, Table),
 
