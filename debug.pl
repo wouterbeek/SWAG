@@ -17,7 +17,7 @@
 %    File,
 %    [access(read),file_errors(fail),file_type(turtle)]
 %  ), !,
-%  rdf_load([format(turtle)], swag, File).
+%  rdf_load_any([format(turtle),graph(swag)], File).
 init_swag:-
   sa_scrape(swag),
   absolute_file_name(data(swag), File, [access(write),file_type(turtle)]),
