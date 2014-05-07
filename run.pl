@@ -1,5 +1,3 @@
-#!/home/wbeek/bin/swipl
-
 % The run file for the SWAG project.
 
 :- initialization(run_swag).
@@ -10,16 +8,16 @@ run_swag:-
   file_directory_name(ThisFile, ThisDir),
   assert(user:file_search_path(project, ThisDir)),
   
-  % PGC
-  load_pgc(project),
+  % PLC
+  load_plc(project),
   
   % SWAG load file.
   ensure_loaded(load).
 
-load_pgc(_Project):-
+load_plc(_Project):-
   user:file_search_path(plc, _Spec), !.
-load_pgc(Project):-
-  Spec =.. [Project,'PGC'],
+load_plc(Project):-
+  Spec =.. [Project,'Prolog-Library-Collection'],
   assert(user:file_search_path(plc, Spec)),
   load_or_debug(plc).
 
