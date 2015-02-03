@@ -15,70 +15,82 @@ by scraping an online Web site.
 47.374 entries, with codes between 00.000 and 50.122.
 
 @author Wouter Beek
-@version 2013/04, 2014/03
+@version 2013/04, 2014/03, 2015/02
 */
 
-:- use_module(generics(atom_ext)).
-:- use_module(html(html)).
 :- use_module(library(apply)).
-:- use_module(library(lists)).
-:- use_module(library(semweb/rdf_db)).
+:- use_module(library(debug)).
+:- use_module(library(lists), except([delete/3,subset/2])).
+:- use_module(library(semweb/rdf_db), except([rdf_node/1])).
 :- use_module(library(uri)).
 :- use_module(library(xpath)).
-:- use_module(rdf(rdf_build)).
-:- use_module(rdf_term(rdf_datatype)).
-:- use_module(rdf(rdf_image)).
-:- use_module(rdf_term(rdf_string)).
-:- use_module(rdfs(rdfs_build)).
-:- use_module(rdfs(rdfs_label_ext)).
-:- use_module(swag(swag)).
-:- use_module(swag(swag_db)).
-:- use_module(xsd(xsd)).
+
+:- use_module(generics(atom_ext)).
+
+:- use_module(plHtml(html)).
+
+:- use_module(plXsd(xsd)).
+
+:- use_module(plRdf(api/rdf_build)).
+:- use_module(plRdf(api/rdfs_build)).
+:- use_module(plRdf(rdf_image)).
+
+
 
 
 
 %! sa_scrape(+Graph:atom) is det.
 % Crawls the Sackner Archive for all the entries that it contains.
 
-sa_scrape(G):-
-  sa_assert_schema(G),
-  sa_scrape(G, 0).
-
+sa_scrape(Graph):-
+  sa_assert_schema(Graph),
+  sa_scrape(Graph, 0).
 
 %! sa_scrape(+Graph:atom, +FirstEntry:nonneg) is det.
 % Crawls the Sackner Archive as of the given entry number.
-% This allows for easy continuing of crawls
-%  that broke before being completed.
+%
+% Argument `FirstEntry` allows for easy continuing of crawls
+% that broke before being completed.
 
 sa_scrape(Graph, FirstNumber):-
   rdfs_assert_subclass(swag:'Entry', rdfs:'Resource', Graph),
   rdfs_assert_label(swag:'Entry', 'Entry in the Sackner Archive', Graph),
 
   rdfs_assert_subclass(swag:'Property', rdf:'Property', Graph),
-  rdfs_assert_label(swag:'Property', 'Property used in the Sackner Archive',
-    Graph),
+  rdfs_assert_label(
+    swag:'Property',
+    'Property used in the Sackner Archive',
+    Graph
+  ),
 
   % The last entry has identifier 50,122, as of 2013/03/14.
-  findall(
-    ignore(catch(sa_scrape_entry(Graph, Entry), E, print_message(error, E))),
-    between(FirstNumber, 100000, Entry),
-    Goals
-  ),
-  maplist(call, Goals).
+  sa_scrape_entries(Graph, FirstNumber).
 
+sa_scrape_entries(Graph, EntryId):-
+  (   sa_scrape_entry(Graph, EntryId)
+  ->  debug(sa_scrape, 'Scraped entry ~D.', [EntryId]),
+      NewEntryId is EntryId + 1,
+      sa_scrape_entries(Graph, NewEntryId)
+  ;   debug(sa_scrape, 'SA scrape is done.', [])
+  ).
 
-%% sa_scrape_entry(+Graph:atom, +Entry:nonneg) is det.
+%! sa_scrape_entry(+Graph:atom, +Entry:nonneg) is det.
 % Scrapes the Sackner Archive for the specific entry
-%  with the given identifier.
+% with the given identifier.
 
 sa_scrape_entry(Graph, EntryId1):-
+  % Create a SWAG entry resource.
+  rdf_create_next_resource(swag, ['Entry'], swag:'Entry', Graph, Entry),
+  rdf_assert_typed_literal(
+    Entry,
+    swag:original_id,
+    EntryId1,
+    xsd:integer,
+    Graph
+  ),
+
   % The entry identifier has to be padded with zeros.
   format_integer(EntryId1, 5, EntryId2),
-
-  rdf_create_next_resource(swag, 'Entry', Entry, Graph),
-  xsd_lexical_map(xsd:integer, EntryId2, XsdValue),
-  rdf_assert_datatype(Entry, swag:original_id, XsdValue, xsd:integer, Graph),
-
   atomic_concat('413201333230~', EntryId2, TemporaryNumber),
   uri_components(
     DescriptionUri,
@@ -90,9 +102,9 @@ sa_scrape_entry(Graph, EntryId1):-
       ''
     )
   ),
-  download_html([html_dialect(html4)], DescriptionUri, Html),
+  download_html_dom(DescriptionUri, Dom, [html_dialect(html4)]),
 
-  xpath_chk(Html, //table, Table),
+  xpath_chk(Dom, //table, Table),
 
   findall(
     PredicateName-Value,
@@ -120,10 +132,8 @@ sa_nvpair(Table, PredicateName2, Value2):-
   xpath_chk(Row, //td(1)/span(normalize_space), PredicateName1),
   PredicateName1 \== '',
   xpath_chk(Row, //td(2)/p, P),
-  (
-    xpath_chk(P, //input(@value), Values1)
-  ;
-    xpath_chk(P, //textarea(normalize_space), Values1)
+  (   xpath_chk(P, //input(@value), Values1)
+  ;   xpath_chk(P, //textarea(normalize_space), Values1)
   ),
 
   % Some values are enumarations separated by dashes.
@@ -142,7 +152,7 @@ sa_assert_schema(G):-
     (
       atomic_list_concat(['Property',PropertyName1], '/', PropertyName2),
       rdf_global_id(swag:PropertyName2, Property),
-      rdfs_assert_label(Property, en, RdfsLabel, G)
+      rdfs_assert_label(Property, [en]-RdfsLabel, G)
     )
   ),
 
@@ -176,7 +186,7 @@ sa_assert_schema(G):-
   rdfs_assert_domain(swag:exhibition_catalog,      swag:'Entry', G),
   rdfs_assert_range( swag:exhibition_catalog,      xsd:string,   G),
   rdfs_assert_domain(swag:dimensions,              swag:'Entry', G),
-  rdfs_assert_range( swag:dimensions,              wb:box,       G),
+  rdfs_assert_range( swag:dimensions,              xsd:string,   G),
   rdfs_assert_domain(swag:illustration_bwc,        swag:'Entry', G),
   rdfs_assert_range( swag:illustration_bwc,        xsd:string,   G),
   rdfs_assert_domain(swag:inscribed,               swag:'Entry', G),
@@ -221,7 +231,7 @@ sa_assert_schema(G):-
 
 sa_assert_triple(Graph, Entry, PredicateName-Value):-
   rdf_global_id(swag:PredicateName, Predicate),
-  rdf_assert_string(Entry, Predicate, Value, Graph).
+  rdf_assert_typed_literal(Entry, Predicate, Value, xsd:string, Graph).
 
 
 %! crawl_image(+Graph:atom, +Entry:integer, -ImageName:atom) is det.
@@ -238,14 +248,14 @@ sa_assert_triple(Graph, Entry, PredicateName-Value):-
 
 crawl_image(Graph, Entry, Name):-
   atomic_concat('/sacknerarchives/FULL/', Name, Path),
-  uri_components(URL, uri_components(http, 'ww3.rediscov.com', Path, _, _)),
-  rdf_assert_image([], Entry, swag:image, URL, Graph), !.
+  uri_components(Uri, uri_components(http, 'ww3.rediscov.com', Path, _, _)),
+  rdf_assert_image(Entry, swag:image, Uri, Graph, [cache(true)]), !.
 crawl_image(Graph, Entry, Name):-
   gtrace, %DEB
   crawl_image(Graph, Entry, Name).
 
 
-%% sa_predicate_term(?Legacy:atom, ?Property:atom, ?Label:atom) is nondet.
+%! sa_predicate_term(?Legacy:atom, ?Property:atom, ?Label:atom) is nondet.
 
 sa_predicate_term('# Artist Proofs:',         number_of_artist_proofs, 'Number of artist proofs'     ).
 sa_predicate_term('# Images:',                number_of_images,        'Number of images'            ).

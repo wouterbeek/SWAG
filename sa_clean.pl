@@ -10,7 +10,7 @@
 Automated cleaning of the Sackner Archives dataset.
 
 @author Wouter Beek
-@version 2014/03-2014/04
+@version 2014/03-2014/04, 2015/02
 */
 
 :- use_module(library(aggregate)).
@@ -18,69 +18,61 @@ Automated cleaning of the Sackner Archives dataset.
 :- use_module(library(lists)).
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
-:- use_module(lod(wb)).
-:- use_module(rdf(rdf_name)).
-:- use_module(rdf_term(rdf_literal)).
-:- use_module(rdf_term(rdf_literal_build)).
-:- use_module(rdf_term(rdf_term)).
-:- use_module(rdf_web(rdf_store_table)).
-:- use_module(rdf_web(rdf_term_html)).
-:- use_module(rdfs(rdfs_read)).
-:- use_module(swag(swag_db)).
-:- use_module(xsd(xsd)).
-:- use_module(xsd(xsd_clean)).
+
+:- use_module(plXsd(xsd)).
+
+:- use_module(plRdf(rdf_name)).
+:- use_module(plRdf(api/rdf_build)).
+:- use_module(plRdf(api/rdf_read)).
+:- use_module(plRdf(api/rdfs_read)).
 
 :- rdf_meta(sa_clean(r,r,r,+)).
 :- rdf_meta(sa_clean_preview(r,r,r,+)).
 
 
 
-sa_clean(G):-
+
+
+sa_clean(Graph):-
   forall(
     (
       % @tbd Use rdfs_domain/4 when its done.
-      rdf(P, rdfs:range, Range, G),
+      rdf(P, rdfs:range, Range, Graph),
       xsd_datatype(Range),
       \+ rdf_equal(Range, xsd:string)
     ),
-    sa_clean_preview(P, xsd:string, Range, G)
+    sa_clean_preview(P, xsd:string, Range, Graph)
   ).
 
 
-sa_clean(P, FromDatatype, ToDatatype, G):-
+sa_clean(P, FromDatatype, ToDatatype, Graph):-
   forall(
-    rdf_literal(S, P, FromLexicalForm, FromDatatype, G),
+    rdf_typed_literal(S, P, FromLexicalForm, FromDatatype, Graph),
     (
-      xsd_convert_value(FromDatatype, FromLexicalForm, ToDatatype, ToLexicalForm),
-      rdf_assert_literal(S, P, ToLexicalForm, ToDatatype, G),
-      rdf_retractall_literal(S, P, FromLexicalForm, FromDatatype, G)
+      xsd_lexical_map(FromDatatype, FromLexicalForm, Value),
+      rdf_assert_typed_literal(S, P, Value, ToDatatype, Graph),
+      rdf_retractall_literal(S, P, FromLexicalForm, FromDatatype, Graph)
     )
   ).
 
 
-sa_clean_preview(P, FromDatatype, ToDatatype, G):-
+sa_clean_preview(P, FromDatatype, ToDatatype, Graph):-
   findall(
-    [S,P,FromLiteral,ToLiteral,G],
+    [S,P,FromLexicalForm,ToLexicalForm,ToDatatype,Graph],
     (
-      rdf_literal(S, P, FromLexicalForm, FromDatatype, G),
-      xsd_convert_value(
-        FromDatatype,
-        FromLexicalForm,
-        ToDatatype,
-        ToLexicalForm
-      ),
-      rdf_literal(FromLiteral, FromLexicalForm, FromDatatype),
-      rdf_literal(ToLiteral, ToLexicalForm, ToDatatype)
+      rdf_typed_literal(S, P, FromLexicalForm, FromDatatype, Graph),
+      xsd_lexical_map(FromDatatype, FromLexicalForm, Value),
+      xsd_canonical_map(ToDatatype, Value, ToLexicalForm)
     ),
     Rows
   ),
   rdf_store_rows(
     html([
-      'Literal term transformations for RDF property ',
+      'Type literal transformations for RDF property ',
       \rdf_term_html(rdf_tabular, P),
       '.'
     ]),
-    ['Subject','Predicate','Old literal','New literal','Graph'],
+    ['Subject','Predicate','Old LEX','New LEX','Datatype','Graph'],
     Rows
   ).
 
@@ -95,45 +87,45 @@ sa_assert_value(Entry, Predicate, dimensions, Value, Graph):- !,
   once(dcg_phrase(dimensions(Height, Width, Depth), Value)),
   rdf_bnode(BNode),
   rdf_assert(Entry, Predicate, BNode, Graph),
-  rdf_assert_datatype(BNode, swag:height, Height, xsd:decimal, Graph),
-  rdf_assert_datatype(BNode, swag:width, Width, xsd:decimal, Graph),
-  (
-    var(Depth), !
-  ;
-    rdf_assert_datatype(BNode, swag:depth, Depth, xsd:decimal, Graph)
+  rdf_assert_typed_literal(BNode, swag:height, Height, xsd:decimal, Graph),
+  rdf_assert_typed_literal(BNode, swag:width, Width, xsd:decimal, Graph),
+  (   var(Depth)
+  ->  true
+  ;   rdf_assert_typed_literal(BNode, swag:depth, Depth, xsd:decimal, Graph)
   ).
 sa_assert_value(Entry, Predicate, DatatypeName, Value1, Graph):-
   xsd_datatype(DatatypeName, Datatype),
   xsd_value(DatatypeName, Value1, Value2),
-  rdf_assert_datatype(Entry, Predicate, Value2, Datatype, Graph), !.
+  rdf_assert_typed_literal(Entry, Predicate, Value2, Datatype, Graph), !.
 sa_assert_value(Entry, Predicate, Datatype, Value, Graph):-
   gtrace, %DEB
   format(user_output, '<~w,~w,~w^^~w>', [Entry,Predicate,Value,Datatype]),
   sa_assert_value(Entry, Predicate, Datatype, Value, Graph).
 
 year(Year) -->
-  (`c.`, blanks ; []),
+  (   "c.",
+      blanks
+  ;   ""
+  ),
   xsd_gYear_lexical_map(dateTime(Year, _, _, _, _, _, _)).
 
 dimensions(Height, Width, Depth) -->
   xsd_decimal_lexical_map(Height),
   dimensions_separator,
   xsd_decimal_lexical_map(Width),
-  (
-    dimensions_separator,
-    xsd_decimal_lexical_map(Depth)
-  ;
-    []
+  (   dimensions_separator,
+      xsd_decimal_lexical_map(Depth)
+  ;   ""
   ).
 
 dimensions_separator -->
   blanks,
-  `x`,
+  "x",
   blanks.
 
 
 year(Year) -->
-  (`c.`, blanks ; []),
+  ("c.", blanks ; []),
   gYearLexicalRep(dateTime(Year, _, _, _, _, _, _)).
 */
 

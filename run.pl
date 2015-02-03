@@ -1,31 +1,29 @@
-% The run file for the SWAG project.
+% The standalone startup file for the SWAG project.
 
-:- initialization(run_swag).
+:- if(current_prolog_flag(argv, ['--debug'|_])).
+  :- ensure_loaded(debug).
+:- else.
+  :- ensure_loaded(load).
+:- endif.
 
-run_swag:-
-  % Entry point.
-  source_file(run_swag, ThisFile),
-  file_directory_name(ThisFile, ThisDir),
-  assert(user:file_search_path(project, ThisDir)),
-  
-  % PLC
-  load_plc(project),
-  
-  % SWAG load file.
-  ensure_loaded(load).
 
-load_plc(_Project):-
-  user:file_search_path(plc, _Spec), !.
-load_plc(Project):-
-  Spec =.. [Project,'Prolog-Library-Collection'],
-  assert(user:file_search_path(plc, Spec)),
-  load_or_debug(plc).
+% Start a server that runs the Web interface.
+:- use_module(load_project).
+:- load_subproject(dh, plServer).
 
-load_or_debug(Project):-
-  predicate_property(user:debug_mode, visible), !,
-  Spec =.. [Project,debug],
-  ensure_loaded(Spec).
-load_or_debug(Project):-
-  Spec =.. [Project,load],
-  ensure_loaded(Spec).
+:- use_module(plServer(app_server)).
+:- use_module(plServer(web_modules)). % Web module registration.
 
+:- start_app_server_clas.
+
+
+:- multifile(user:file_search_path/2).
+
+:- dynamic(user:web_module/2).
+:- multifile(user:web_module/2).
+
+http:location(swag, /, []).
+
+% SWAG: Main
+:- use_module(swag(web/swag_main_web)).
+user:web_module('SWAG', swag_main_web).

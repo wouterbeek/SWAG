@@ -1,3 +1,42 @@
+[submodule "plDcg"]
+	path = plDcg
+	url = https://github.com/wouterbeek/plDcg.git
+[submodule "plGraph"]
+	path = plGraph
+	url = https://github.com/wouterbeek/plGraph.git
+[submodule "plHttp"]
+	path = plHttp
+	url = https://github.com/wouterbeek/plHttp.git
+[submodule "plLangTag"]
+	path = plLangTag
+	url = https://github.com/wouterbeek/plLangTag.git
+[submodule "plRdf"]
+	path = plRdf
+	url = https://github.com/wouterbeek/plRdf.git
+[submodule "plSet"]
+	path = plSet
+	url = https://github.com/wouterbeek/plSet.git
+[submodule "plTms"]
+	path = plTms
+	url = https://github.com/wouterbeek/plTms.git
+[submodule "plTree"]
+	path = plTree
+	url = https://github.com/wouterbeek/plTree.git
+[submodule "plUri"]
+	path = plUri
+	url = https://github.com/wouterbeek/plUri.git
+[submodule "plXml"]
+	path = plXml
+	url = https://github.com/wouterbeek/plXml.git
+[submodule "plXsd"]
+	path = plXsd
+	url = https://github.com/wouterbeek/plXsd.git
 [submodule "Prolog-Library-Collection"]
 	path = Prolog-Library-Collection
 	url = https://github.com/wouterbeek/Prolog-Library-Collection.git
+[submodule "plHtml"]
+	path = plHtml
+	url = https://github.com/wouterbeek/plHtml.git
+[submodule "plServer"]
+	path = plServer
+	url = https://github.com/wouterbeek/plServer.git
