@@ -68,8 +68,7 @@ sa_scrape(Graph, FirstNumber):-
 
 sa_scrape_entries(Graph, EntryId):-
   (   sa_scrape_entry(Graph, EntryId)
-  ->  debug(sa_scrape, 'Scraped entry ~D.', [EntryId]),
-      NewEntryId is EntryId + 1,
+  ->  NewEntryId is EntryId + 1,
       sa_scrape_entries(Graph, NewEntryId)
   ;   debug(sa_scrape, 'SA scrape is done.', [])
   ).
@@ -79,16 +78,6 @@ sa_scrape_entries(Graph, EntryId):-
 % with the given identifier.
 
 sa_scrape_entry(Graph, EntryId1):-
-  % Create a SWAG entry resource.
-  rdf_create_next_resource(swag, ['Entry'], swag:'Entry', Graph, Entry),
-  rdf_assert_typed_literal(
-    Entry,
-    swag:original_id,
-    EntryId1,
-    xsd:integer,
-    Graph
-  ),
-
   % The entry identifier has to be padded with zeros.
   format_integer(EntryId1, 5, EntryId2),
   atomic_concat('413201333230~', EntryId2, TemporaryNumber),
@@ -111,20 +100,37 @@ sa_scrape_entry(Graph, EntryId1):-
     sa_nvpair(Table, PredicateName, Value),
     Pairs
   ),
-  maplist(sa_assert_triple(Graph, Entry), Pairs),
-
-  xpath_chk(Table, //tr(2)/td(2)/p, P),
-  findall(
-    ImageName,
-    (
-      xpath(P, input(@src), ImageSubpath1),
-      downcase_atom(ImageSubpath1, ImageSubpath2),
-      atom_concat('thumb\\', ImageName, ImageSubpath2),
-      ImageName \== 'blank.jpg'
-    ),
-    ImageNames
-  ),
-  maplist(crawl_image(Graph, Entry), ImageNames).
+  
+  % Only create an entry if there are some properties.
+  length(Pairs, NumberOfProperties),
+  (   NumberOfProperties =:= 0
+  ->  debug(sa_scrape, 'SKIPPING entry ~D.', [EntryId1])
+  ;   % Create a SWAG entry resource.
+      rdf_create_next_resource(swag, ['Entry'], swag:'Entry', Graph, Entry),
+      rdf_assert_typed_literal(
+        Entry,
+        swag:original_id,
+        EntryId1,
+        xsd:integer,
+        Graph
+      ),
+      % Add the properties.
+      maplist(sa_assert_triple(Graph, Entry), Pairs),
+      % Add the images, if any.
+      xpath_chk(Table, //tr(2)/td(2)/p, P),
+      findall(
+        ImageName,
+        (
+          xpath(P, input(@src), ImageSubpath1),
+          downcase_atom(ImageSubpath1, ImageSubpath2),
+          atom_concat('thumb\\', ImageName, ImageSubpath2),
+          ImageName \== 'blank.jpg'
+        ),
+        ImageNames
+      ),
+      maplist(crawl_image(Graph, Entry), ImageNames),
+      debug(sa_scrape, 'Scraped entry ~D.', [EntryId1])
+  ).
 
 
 sa_nvpair(Table, PredicateName2, Value2):-

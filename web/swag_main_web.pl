@@ -53,8 +53,7 @@ swag_main_web(_):-
 swag_body -->
   {
     site_name(Site),
-gtrace,
-    first_pairs(25, Pairs)
+    once(first_pairs(25, Pairs))
     %%%%random_pairs(25, Pairs)
   },
   html([
