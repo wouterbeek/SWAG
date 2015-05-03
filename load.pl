@@ -10,7 +10,6 @@
 :- load_project([
      mt-'ModelTheory',
      plc-'Prolog-Library-Collection',
-     plDcg,
      plGraph,
      plGraphDraw,
      plGraphViz,
@@ -21,7 +20,6 @@
      plLatticeDraw,
      plRdf,
      plSet,
-     plServer,
      plSvg,
      plTabular,
      plTms,

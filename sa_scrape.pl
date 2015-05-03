@@ -25,7 +25,7 @@ by scraping an online Web site.
 :- use_module(library(uri)).
 :- use_module(library(xpath)).
 
-:- use_module(generics(atom_ext)).
+:- use_module(plc(generics/atom_ext)).
 
 :- use_module(plHtml(html)).
 

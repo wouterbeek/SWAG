@@ -6,31 +6,10 @@
   :- ensure_loaded(load).
 :- endif.
 
-
-% Start a server that runs the Web interface.
-:- use_module(load_project).
-:- load_subproject(dh, plServer).
-
-:- use_module(plServer(app_server)).
-:- use_module(plServer(web_modules)). % Web module registration.
-:- use_module(plServer(templates/menu_page)).
-
-user:current_html_style(menu_page).
-
+:- use_module(plc(server/app_server)).
 :- start_app_server_clas.
 
-
-:- multifile(user:file_search_path/2).
-
-:- dynamic(user:web_module/2).
-:- multifile(user:web_module/2).
-
-http:location(swag, /, []).
-
-% SWAG: Main
-:- use_module(swag(web/swag_main_web)).
-user:web_module('SWAG', swag_main_web).
-
-% plTabular
-:- use_module(plTabular(rdf_tabular)).
-user:web_module('plTabular', rdf_tabular).
+:- use_module(plHtml(template/easy_peasy)).
+:- dynamic(user:current_html_style/1).
+:- multifile(user:current_html_style/1).
+user:current_html_style(easy_peasy).

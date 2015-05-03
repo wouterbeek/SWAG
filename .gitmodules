@@ -1,6 +1,3 @@
-[submodule "plDcg"]
-	path = plDcg
-	url = https://github.com/wouterbeek/plDcg.git
 [submodule "plGraph"]
 	path = plGraph
 	url = https://github.com/wouterbeek/plGraph.git
@@ -37,9 +34,6 @@
 [submodule "plHtml"]
 	path = plHtml
 	url = https://github.com/wouterbeek/plHtml.git
-[submodule "plServer"]
-	path = plServer
-	url = https://github.com/wouterbeek/plServer.git
 [submodule "plTreeDraw"]
 	path = plTreeDraw
 	url = https://github.com/wouterbeek/plTreeDraw.git
