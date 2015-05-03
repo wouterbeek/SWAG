@@ -6,7 +6,7 @@ The Social Web of the Avant-Garde.
 Web front-end for the Social Web of the Avant-Garde.
 
 @author Wouter Beek
-@version 2013/04, 2014/01, 2014/03-2014/04, 2015/02
+@version 2013/04, 2014/01, 2014/03-2014/04, 2015/02, 2015/04
 */
 
 :- use_module(library(aggregate)).
@@ -24,33 +24,64 @@ Web front-end for the Social Web of the Avant-Garde.
 :- use_module(plUri(uri_ext)).
 
 :- use_module(plHtml(html_image)).
+:- use_module(plHtml(page/http_error_page)).
+:- use_module(plHtml(page_component/page_footer)).
+:- use_module(plHtml(page_component/page_head)).
+:- use_module(plHtml(page_component/page_header)).
 
 :- use_module(plRdf(api/rdf_read)).
-
-:- use_module(plServer(templates/menu_page)).
-
-:- http_handler(/, swag_main_web, [prefix]).
-
-:- html_resource(css('image.css'), []).
-:- html_resource(css('page.css'), []).
 
 :- dynamic(user:file_search_path/2).
 :- multifile(user:file_search_path/2).
 
 user:file_search_path(img, data(.)).
 
+:- http_handler(/, swag_home, [id(swag_home),prefix]).
+:- http_handler(/, swag_404, [id(swag_404),prefix]).
 
 
 
 
-swag_main_web(_):-
-  reply_html_page(
-    menu_page,
-    \swag_head('Grid'),
-    \swag_body
+
+swag_home(_):-
+  reply_styled_html_page(
+    html(\swag_head(["Home"])),
+    html(\swag_body("Home", \swag_picture_grid, false)
   ).
 
-swag_body -->
+
+
+swag_body(Selection, Content, _) -->
+  html(
+    div(id=canvas, [
+      \page_centered_header(
+        "The Semantic Web of the Avant-Garde",
+        'logo.svg',
+        ["Home"],
+        Selection
+      ),
+      Content,
+      footer([])
+    ])
+  ).
+
+
+
+swag_head(Subtitles) -->
+  page_head(
+    "The Social Web of the Avant-Garde",
+    Subtitles,
+    []
+  ).
+
+
+
+swag_404(Request):-
+  http_error_page(404, Request, nl, swag_head, swag_body).
+
+
+
+swag_picture_grid -->
   {
     site_name(Site),
     once(first_pairs(25, Pairs))
@@ -60,15 +91,6 @@ swag_body -->
     div(id=page_title, Site),
     \html_image_thumbnail_box_grid(5, 5, 350, 350, Pairs)
   ]).
-
-swag_head(Section) -->
-  {site_name(Site)},
-  html([
-    title([Site,' -- ',Section]),
-    \html_requires(css('image.css')),
-    \html_requires(css('page.css'))
-  ]).
-
 
 first_pairs(N, Pairs):-
   findnsols(
@@ -102,6 +124,3 @@ random_pairs(N1, Max, Pairs1):-
       random_pairs(N2, Max, Pairs2)
   ;   random_pairs(N1, Max, Pairs1)
   ).
-
-
-site_name('The Social Web of the Avant-Garde (pre-alpha)').
