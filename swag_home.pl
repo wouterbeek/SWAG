@@ -1,6 +1,6 @@
-:- module(swag_main_web, []).
+:- module(swag_home, []).
 
-/** <module> SWAG Website
+/** <module> SWAG homepage
 
 The Social Web of the Avant-Garde.
 Web front-end for the Social Web of the Avant-Garde.
@@ -19,10 +19,11 @@ Web front-end for the Social Web of the Avant-Garde.
 :- use_module(library(semweb/rdf_db)).
 :- use_module(library(semweb/rdfs)).
 
-:- use_module(generics(db_ext)).
+:- use_module(plc(generics/db_ext)).
 
 :- use_module(plUri(uri_ext)).
 
+:- use_module(plHtml(html)).
 :- use_module(plHtml(html_image)).
 :- use_module(plHtml(page/http_error_page)).
 :- use_module(plHtml(page_component/page_footer)).
@@ -36,8 +37,8 @@ Web front-end for the Social Web of the Avant-Garde.
 
 user:file_search_path(img, data(.)).
 
-:- http_handler(/, swag_home, [id(swag_home),prefix]).
-:- http_handler(/, swag_404, [id(swag_404),prefix]).
+:- http_handler(/, swag_home, [id(swag_home)]).
+:- http_handler(/, swag_404, [id(swag_404),prefix,priority(-1)]).
 
 
 
@@ -46,26 +47,34 @@ user:file_search_path(img, data(.)).
 swag_home(_):-
   reply_styled_html_page(
     html(\swag_head(["Home"])),
-    html(\swag_body("Home", \swag_picture_grid, false)
+    html(\swag_body("Home", \swag_picture_grid, false))
   ).
 
 
 
 swag_body(Selection, Content, _) -->
-  html(
-    div(id=canvas, [
-      \page_centered_header(
-        "The Semantic Web of the Avant-Garde",
-        'logo.svg',
+  html([
+    \page_horizontal_header(
+      "SWAG",
+      "The Semantic Web of the Avant-Garde",
+      'header.jpg',
         ["Home"],
         Selection
-      ),
-      Content,
-      footer([])
+    ),
+    main(Content),
+    footer(\swag_footer)
+  ]).
+
+swag_footer -->
+  html(
+    div([
+      'Developed by ',
+      a(href='http://www.wouterbeek.com', 'Wouter Beek'),
+      ' in May 2015 using ',
+      a(href='http://www.swi-prolog.org', 'SWI-Prolog'),
+      '.'
     ])
   ).
-
-
 
 swag_head(Subtitles) -->
   page_head(
@@ -83,14 +92,10 @@ swag_404(Request):-
 
 swag_picture_grid -->
   {
-    site_name(Site),
     once(first_pairs(25, Pairs))
     %%%%random_pairs(25, Pairs)
   },
-  html([
-    div(id=page_title, Site),
-    \html_image_thumbnail_box_grid(5, 5, 350, 350, Pairs)
-  ]).
+  html(\html_image_thumbnail_box_grid(5, 5, 350, 350, Pairs)).
 
 first_pairs(N, Pairs):-
   findnsols(
