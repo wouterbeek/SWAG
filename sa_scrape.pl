@@ -15,25 +15,21 @@ by scraping an online Web site.
 47.374 entries, with codes between 00.000 and 50.122.
 
 @author Wouter Beek
-@version 2013/04, 2014/03, 2015/02
+@version 2015/10
 */
 
 :- use_module(library(apply)).
+:- use_module(library(atom_ext)).
 :- use_module(library(debug)).
-:- use_module(library(lists), except([delete/3,subset/2])).
-:- use_module(library(semweb/rdf_db), except([rdf_node/1])).
+:- use_module(library(filesex)).
+:- use_module(library(http/http_download)).
+:- use_module(library(lists)).
+:- use_module(library(rdf/rdf_build)).
+:- use_module(library(rdf/rdf_image)).
+:- use_module(library(rdfs/rdfs_build)).
+:- use_module(library(semweb/rdf_db)).
 :- use_module(library(uri)).
 :- use_module(library(xpath)).
-
-:- use_module(plc(generics/atom_ext)).
-
-:- use_module(plHtml(html)).
-
-:- use_module(plXsd(xsd)).
-
-:- use_module(plRdf(api/rdf_build)).
-:- use_module(plRdf(api/rdfs_build)).
-:- use_module(plRdf(rdf_image)).
 
 
 
@@ -42,9 +38,9 @@ by scraping an online Web site.
 %! sa_scrape(+Graph:atom) is det.
 % Crawls the Sackner Archive for all the entries that it contains.
 
-sa_scrape(Graph):-
-  sa_assert_schema(Graph),
-  sa_scrape(Graph, 0).
+sa_scrape(G):-
+  sa_assert_schema(G),
+  sa_scrape(G, 0).
 
 %! sa_scrape(+Graph:atom, +FirstEntry:nonneg) is det.
 % Crawls the Sackner Archive as of the given entry number.
@@ -52,113 +48,108 @@ sa_scrape(Graph):-
 % Argument `FirstEntry` allows for easy continuing of crawls
 % that broke before being completed.
 
-sa_scrape(Graph, FirstNumber):-
-  rdfs_assert_subclass(swag:'Entry', rdfs:'Resource', Graph),
-  rdfs_assert_label(swag:'Entry', 'Entry in the Sackner Archive', Graph),
+sa_scrape(G, N):-
+  % swag:Entry
+  rdfs_assert_subclass(swag:'Entry', G),
+  rdfs_assert_label(swag:'Entry', 'Entry in the Sackner Archive', G),
 
-  rdfs_assert_subclass(swag:'Property', rdf:'Property', Graph),
+  % swag:Property
+  rdfs_assert_subclass(swag:'Property', rdf:'Property', G),
   rdfs_assert_label(
     swag:'Property',
     'Property used in the Sackner Archive',
-    Graph
+    G
   ),
 
   % The last entry has identifier 50,122, as of 2013/03/14.
-  sa_scrape_entries(Graph, FirstNumber).
+  sa_scrape_entries(G, N).
 
-sa_scrape_entries(Graph, EntryId):-
-  (   sa_scrape_entry(Graph, EntryId)
-  ->  NewEntryId is EntryId + 1,
-      sa_scrape_entries(Graph, NewEntryId)
-  ;   debug(sa_scrape, 'SA scrape is done.', [])
+sa_scrape_entries(G, N):-
+  (   sa_scrape_entry(G, N)
+  ->  NewN is N + 1,
+      sa_scrape_entries(G, NewN)
+  ;   debug(sa(scrape), "SA scrape is done.", [])
   ).
 
 %! sa_scrape_entry(+Graph:atom, +Entry:nonneg) is det.
 % Scrapes the Sackner Archive for the specific entry
 % with the given identifier.
 
-sa_scrape_entry(Graph, EntryId1):-
+sa_scrape_entry(G, N1):-
   % The entry identifier has to be padded with zeros.
-  format_integer(EntryId1, 5, EntryId2),
-  atomic_concat('413201333230~', EntryId2, TemporaryNumber),
+  format_integer(N1, 5, N2),
+  atomic_concat('413201333230~', N2, TmpN),
   uri_components(
-    DescriptionUri,
+    Iri,
     uri_components(
       http,
       'ww3.rediscov.com',
       '/sacknerarchives/ShowItem.aspx',
-      TemporaryNumber,
+      TmpN,
       ''
     )
   ),
-  download_html_dom(DescriptionUri, Dom, [html_dialect(html4)]),
+  html_download(Iri, Dom, [html_dialect(html4)]),
 
   xpath_chk(Dom, //table, Table),
 
-  findall(
-    PredicateName-Value,
-    sa_nvpair(Table, PredicateName, Value),
-    Pairs
-  ),
+  findall(PName-Val, sa_nvpair(Table, PName, Val), Pairs),
   
   % Only create an entry if there are some properties.
   length(Pairs, NumberOfProperties),
   (   NumberOfProperties =:= 0
-  ->  debug(sa_scrape, 'SKIPPING entry ~D.', [EntryId1])
+  ->  debug(sa(scrape), "SKIPPING entry ~D.", [N1])
   ;   % Create a SWAG entry resource.
-      rdf_create_next_resource(swag, ['Entry'], swag:'Entry', Graph, Entry),
-      rdf_assert_typed_literal(
-        Entry,
-        swag:original_id,
-        EntryId1,
-        xsd:integer,
-        Graph
-      ),
+      fresh_iri(swag, ['Entry'], Entry),
+      rdf_assert_instance(Entry, swag:'Entry', G),
+      rdf_assert_literal(Entry, swag:original_id, xsd:integer, N1, G),
+      
       % Add the properties.
-      maplist(sa_assert_triple(Graph, Entry), Pairs),
+      maplist(sa_assert_triple(G, Entry), Pairs),
+      
       % Add the images, if any.
       xpath_chk(Table, //tr(2)/td(2)/p, P),
       findall(
-        ImageName,
+        ImgName,
         (
-          xpath(P, input(@src), ImageSubpath1),
-          downcase_atom(ImageSubpath1, ImageSubpath2),
-          atom_concat('thumb\\', ImageName, ImageSubpath2),
-          ImageName \== 'blank.jpg'
+          xpath(P, input(@src), ImgSubpath1),
+          downcase_atom(ImgSubpath1, ImgSubpath2),
+          atom_concat('thumb\\', ImgName, ImgSubpath2),
+          ImgName \== 'blank.jpg'
         ),
-        ImageNames
+        ImgNames
       ),
-      maplist(crawl_image(Graph, Entry), ImageNames),
-      debug(sa_scrape, 'Scraped entry ~D.', [EntryId1])
+      maplist(crawl_image(G, Entry), ImgNames),
+      debug(sa(scrape), "Scraped entry ~D.", [N1])
   ).
 
 
-sa_nvpair(Table, PredicateName2, Value2):-
+sa_nvpair(Table, PName2, Val2):-
   xpath(Table, //tr, Row),
-  xpath_chk(Row, //td(1)/span(normalize_space), PredicateName1),
-  PredicateName1 \== '',
+  xpath_chk(Row, //td(1)/span(normalize_space), PName1),
+  PName1 \== '',
   xpath_chk(Row, //td(2)/p, P),
-  (   xpath_chk(P, //input(@value), Values1)
-  ;   xpath_chk(P, //textarea(normalize_space), Values1)
+  (   xpath_chk(P, //input(@value), Vals1)
+  ;   xpath_chk(P, //textarea(normalize_space), Vals1)
   ),
 
   % Some values are enumarations separated by dashes.
-  atomic_list_concat(Values2, ' --', Values1),
-  member(Value1, Values2),
+  atomic_list_concat(Vals2, ' --', Vals1),
+  member(Val1, Vals2),
 
   % Some values have superfluous spaces pre- and/or postfixed.
-  strip_atom([' '], Value1, Value2),
-  once(sa_predicate_term(PredicateName1, PredicateName2, _)).
+  strip_atom([' '], Val1, Val2),
+  once(sa_predicate_term(PName1, PName2, _)).
 
 
 sa_assert_schema(G):-
   % Assert descriptive labels for the properties.
   forall(
-    sa_predicate_term(_, PropertyName1, RdfsLabel),
+    sa_predicate_term(_, PName1, Label),
     (
-      atomic_list_concat(['Property',PropertyName1], '/', PropertyName2),
-      rdf_global_id(swag:PropertyName2, Property),
-      rdfs_assert_label(Property, [en]-RdfsLabel, G)
+      atomic_list_concat(['Property',PName1], /, PName2),
+      rdf_global_id(swag:PName2, P),
+      rdfs_assert_label(P, Label-'en-US', G)
     )
   ),
 
@@ -235,12 +226,12 @@ sa_assert_schema(G):-
   rdfs_assert_range( swag:year,                    xsd:gYear,    G).
 
 
-sa_assert_triple(Graph, Entry, PredicateName-Value):-
-  rdf_global_id(swag:PredicateName, Predicate),
-  rdf_assert_typed_literal(Entry, Predicate, Value, xsd:string, Graph).
+sa_assert_triple(G, Entry, PName-Val):-
+  rdf_global_id(swag:PName, P),
+  rdf_assert_literal(Entry, P, xsd:string, Val, G).
 
 
-%! crawl_image(+Graph:atom, +Entry:integer, -ImageName:atom) is det.
+%! crawl_image(+Graph:atom, +Entry:nonneg, -ImageName:atom) is det.
 % Returns an image for the given entry in the Sackner Archive.
 %
 % The image is retrieved from the server of the Sackner Archive and is
@@ -252,13 +243,16 @@ sa_assert_triple(Graph, Entry, PredicateName-Value):-
 % If the entry has no more images, then this method succeeds without
 %  instantiating =|ImageName|=.
 
-crawl_image(Graph, Entry, Name):-
+crawl_image(G, Entry, Name):-
   atomic_concat('/sacknerarchives/FULL/', Name, Path),
-  uri_components(Uri, uri_components(http, 'ww3.rediscov.com', Path, _, _)),
-  rdf_assert_image(Entry, swag:image, Uri, Graph, [cache(true)]), !.
-crawl_image(Graph, Entry, Name):-
+  uri_components(Iri, uri_components(http,'ww3.rediscov.com',Path,_,_)),
+  absolute_file_name(resource/img, Dir, [access(write),file_type(directory)]),
+  directory_file_path(Dir, Name, File),
+  file_download(Iri, File),
+  rdf_assert_literal(Entry, swag:image, xsd:string, Name, G), !.
+crawl_image(G, Entry, Name):-
   gtrace, %DEB
-  crawl_image(Graph, Entry, Name).
+  crawl_image(G, Entry, Name).
 
 
 %! sa_predicate_term(?Legacy:atom, ?Property:atom, ?Label:atom) is nondet.
@@ -302,4 +296,3 @@ sa_predicate_term(Name, _, _):-
   nonvar(Name),
   gtrace, %DEB
   format(user_output, '~a', [Name]).
-

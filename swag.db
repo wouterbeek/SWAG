@@ -1,0 +1,11 @@
+%	Abbreviation of the Web site.
+setting(sb_settings:abbr, 'SWAG').
+
+%	Description of the Web site.
+setting(sb_settings:description, 'Semantic Web of the Avant-Garde').
+
+% Natural language preferences.
+setting(sb_settings:language_priority_list, [nl,'en-US']).
+
+%	Title of the Web site.
+setting(sb_settings:title, 'Semantic Web of the Avant-Garde').
