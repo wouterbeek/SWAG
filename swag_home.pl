@@ -70,13 +70,14 @@ swag_footer -->
   ).
 
 swag_head(Subtitles) -->
-  html(
+  html([
+    \html_requires(css(image)),
     \html_page_head(
       "The Social Web of the Avant-Garde",
       Subtitles,
       []
     )
-  ).
+  ]).
 
 
 
