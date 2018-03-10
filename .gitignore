@@ -1,3 +1,4 @@
 *~
 *.log
-resource/img/
+data.nq.gz
+img/*.jpg

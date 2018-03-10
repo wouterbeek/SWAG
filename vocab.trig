@@ -1,0 +1,164 @@
+prefix def: <https://sackner-archive.org/def/>
+prefix graph: <https://sackner-archive.org/graph/>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+prefix schema: <http://schema.org/>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+
+graph:vocab {
+
+  def:number_of_artist_proofs
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Number of artist proofs" ;
+    rdfs:range xsd:nonNegativeInteger .
+
+  def:number_of_images
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Number of images" ;
+    rdfs:range xsd:nonNegativeInteger .
+
+  def:number_of_art_proofs
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Number of art proofs" ;
+    rdfs:range xsd:nonNegativeInteger .
+
+  def:number_of_letter_copies
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Number of letter copies" ;
+    rdfs:range xsd:nonNegativeInteger .
+
+  def:announcement
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Announcement" ;
+    rdfs:range xsd:string .
+
+  def:annotation
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Annotation" ;
+    rdfs:range xsd:string .
+
+  def:catalog
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Catalog" ;
+    rdfs:range xsd:string .
+
+  def:city_country
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "City and/or country" ;
+    rdfs:range xsd:string .
+
+  def:classification
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Classification" ;
+    rdfs:range xsd:string .
+
+  def:container
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Container" ;
+    rdfs:range xsd:string .
+
+  def:contributor
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Contributor" ;
+    rdfs:range xsd:string .
+
+  def:exhibition_announcement
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Exhibition announcement" ;
+    rdfs:range xsd:string .
+
+  def:exhibition_catalog
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Exhibition catalog" ;
+    rdfs:range xsd:string .
+
+  def:dimensions
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Dimensions" ;
+    rdfs:range xsd:string .
+
+  def:illustration_bwc
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Illustration BWC" ;
+    rdfs:range xsd:string .
+
+  def:inscribed
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Inscribed" ;
+    rdfs:range xsd:string .
+
+  def:language
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Language" ;
+    rdfs:range xsd:string .
+
+  def:media
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Media" ;
+    rdfs:range xsd:string .
+
+  def:nationality
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Nationality" ;
+    rdfs:range xsd:string .
+
+  def:number_of_dups
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Number of duplicates" ;
+    rdfs:range xsd:decimal .
+
+  def:number_series_month
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Magazine number/series/month" ;
+    rdfs:range xsd:string .
+
+  def:number_of_pages
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Number of pages" ;
+    rdfs:range xsd:nonNegativeInteger .
+
+  def:periodical
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Periodical" ;
+    rdfs:range xsd:string .
+
+  def:purchase_year
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Year of purchase" ;
+    rdfs:range xsd:gYear .
+
+  def:series
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Series" ;
+    rdfs:range xsd:string .
+
+  def:signature
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Signature" ;
+    rdfs:range xsd:string .
+
+  def:subtitle
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Subtitle author" ;
+    rdfs:range xsd:string .
+
+  def:subtitle_author
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Subtitle" ;
+    rdfs:range xsd:string .
+
+  def:number_of_copies
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Number of copies" ;
+    rdfs:range xsd:nonNegativeInteger .
+
+  def:translator
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Translator" ;
+    rdfs:range xsd:string .
+
+  def:volume
+    rdfs:domain schema:CreativeWork ;
+    rdfs:label "Volume" ;
+    rdfs:range xsd:string .
+
+}
