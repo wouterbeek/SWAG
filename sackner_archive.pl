@@ -1,4 +1,4 @@
-:- module(sackner_archive, [run/0]).
+:- module(sackner_archive, [run/1]).
 
 /** <module> Sackner Archive
 
@@ -60,7 +60,7 @@ by scraping an online Web site.
 
 
 
-%! run is det.
+%! run(+N:nonneg) is det.
 %
 % Scrapes the Sackner Archive.
 %
@@ -69,9 +69,9 @@ by scraping an online Web site.
 %
 % The last entry has identifier 50,122, as of 2013/03/14.
 
-run :-
+run(N) :-
   debug(sackner_archive, "Start scrape.", []),
-  scrape_entries(0, graph:data),
+  scrape_entries(N, graph:data),
   setup_call_cleanup(
     gzopen('data.nq.gz', write, Out),
     forall(
@@ -93,7 +93,6 @@ run :-
   % Clean up temporary files.
   concurrent_maplist(delete_file, ['data.nq.gz'|Files]).
 
-scrape_entries(1000, _) :- !.
 scrape_entries(N1, G) :-
   (   scrape_entry(N1, G)
   ->  N2 is N1 + 1,
@@ -104,8 +103,7 @@ scrape_entries(N1, G) :-
 scrape_entry(N, G) :-
   atom_number(Id, N),
   % The entry identifier has to be padded with zeros.
-  % @tbd Change '~c' and 0'~ into a simple ~ after bug fix.
-  format(atom(Query), "310201890825~c~|~`0t~d~5+", [0'~,N]),
+  format(atom(Query), "310201890825~~~|~`0t~d~5+", [N]),
   uri_comps(
     Uri,
     uri(http,'ww3.rediscov.com',[sacknerarchives,'showitem.aspx'],Query,_)
@@ -225,7 +223,7 @@ property_name_('Series:',                  def:series).
 property_name_('Signature:',               def:signature).
 property_name_('Sub Tit Au:',              def:subtitle_author).
 property_name_('Subtitle:',                def:subtitle).
-property_name_('Title:',                   rdfs:title).
+property_name_('Title:',                   def:title).
 property_name_('Total Copies:',            def:number_of_copies, xsd:nonNegativeInteger).
 property_name_('Translator:',              def:translator).
 property_name_('Volume:',                  def:volume).
