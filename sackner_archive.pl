@@ -1,4 +1,4 @@
-:- module(sackner_archive, [run/1]).
+:- module(sackner_archive, [run/1,upload/0]).
 
 /** <module> Sackner Archive
 
@@ -70,8 +70,12 @@ by scraping an online Web site.
 % The last entry has identifier 50,122, as of 2013/03/14.
 
 run(N) :-
+  must_be(nonneg, N),
   debug(sackner_archive, "Start scrape.", []),
   scrape_entries(N, graph:data),
+  upload.
+
+upload :-
   setup_call_cleanup(
     gzopen('data.nq.gz', write, Out),
     forall(
