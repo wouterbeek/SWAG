@@ -182,7 +182,7 @@ download_image(S, Lex0, G) :-
     uri(http,'ww3.rediscov.com',[sacknerarchives,'FULL',Lex0],_,_)
   ),
   directory_file_path(img, Lex0, File),
-  atom_concat('https://krr.triply.cc/wouter/sackner-archive/files/', Lex0, Lex),
+  atom_concat('https://nightly.triply.cc/wouter/sackner-archives/assets/', Lex0, Lex),
   file_download_buggy(Uri, File),
   rdf_assert(S, foaf:depiction, literal(type(xsd:anyURI,Lex)), G).
 
