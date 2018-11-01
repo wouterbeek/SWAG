@@ -1,3 +1,4 @@
+:- encoding(utf8).
 /* etl-sackner-archive
 
 Constructs a Semantic Web database based on the Sackner Archive data,
@@ -27,9 +28,9 @@ by scraping an online Web site.
 :- use_module(library(tapir/tapir_api)).
 :- use_module(library(uri_ext)).
 
-:- curl.
+%:- curl.
 
-:- debug(sackner_archive).
+:- debug(known_issue).
 
 :- discontiguous
     property_name_/2,
@@ -86,25 +87,26 @@ scrape_entry(N, G) :-
     close(In)
   ),
   xpath_chk(Dom, //table, Table),
-  findall(Triple, table_row(Table, Triple), Triples),
+  findall(Row, table_row(Table, Row), Rows),
   % Do not create a subject term for empty records.
-  (   Triples == []
-  ->  debug(sackner_archive, "Skipping empty entry ~D.", [N])
+  (   Rows == []
+  ->  debug(known_issue, "Skipping empty entry № ~D.", [N])
   ;   rdf_prefix_iri(work, Id, S),
       rdf_assert_triple(S, rdf:type, schema:'CreativeWork', G),
-      rdf_assert_triple(S, sa:source_id, nonneg(Id), G),
+      rdf_assert_triple(S, sa:source_id, nonneg(N), G),
       % Add the properties.
-      maplist({S,G}/[Triple]>>assert_row(S, Triple, G), Triples),
+      forall(
+        member(row(P,D,Lex), Rows),
+        rdf_assert_triple(S, P, literal(type(D,Lex)), G)
+      ),
       % Add the images, if any.
       xpath_chk(Table, //tr(2)/td(2)/p, P),
       forall(
         (
           xpath(P, input(@src(lower)), ImageSubpath),
-          atom_concat('thumb\\', ImageName, ImageSubpath),
-          % Exclude empty images.
-          ImageName \== 'blank.jpg'
+          atom_concat('thumb\\', ImageName, ImageSubpath)
         ),
-        download_image(S, ImageName, G)
+        download_nonblank_image(N, S, ImageName, G)
       )
   ).
 
@@ -126,8 +128,8 @@ table_row(Table, row(P,D,Lex)) :-
   atom_strip(Lex0, Lex).
 
 assert_row(S, row(P,D,Lex), G) :-
-  writeln(P),
   rdf_assert_triple(S, P, literal(type(D,Lex)), G).
+
 
 
 %! download_image(+S:iri, +Local:atom, +Graph:rdf_graph) is det.
@@ -155,6 +157,15 @@ download_image(S, Local, G) :-
   ),
   http_download(FromUri, File),
   rdf_assert_triple(S, foaf:depiction, uri(ToUri), G).
+
+
+
+%! download_nonblank_image(+N:nonneg, +S:rdf_subject, +ImageName:atom, +G:rdf_graph) is det.
+
+download_nonblank_image(N, _, 'blank.jpg', _) :- !,
+  debug(known_issue, "Skipping blank image for record № ~D.", [N]).
+download_nonblank_image(_, S, ImageName, G) :-
+  download_image(S, ImageName, G).
 
 
 
