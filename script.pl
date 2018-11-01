@@ -13,6 +13,7 @@ by scraping an online Web site.
 :- use_module(library(apply)).
 :- use_module(library(debug)).
 :- use_module(library(error)).
+:- use_module(library(http/http_open), []). % @bug see below
 :- use_module(library(lists)).
 :- use_module(library(sgml)).
 :- use_module(library(xpath)).
@@ -30,7 +31,8 @@ by scraping an online Web site.
 
 %:- curl.
 
-:- debug(known_issue).
+%:- debug(known_issue).
+:- debug(unknown_issue).
 
 :- discontiguous
     property_name_/2,
@@ -132,9 +134,10 @@ assert_row(S, row(P,D,Lex), G) :-
 
 
 
-%! download_image(+S:iri, +Local:atom, +Graph:rdf_graph) is det.
+%! download_nonblank_image(+N:nonneg, +S:rdf_subject, +ImageName:atom, +G:rdf_graph) is det.
 %
-% Returns an image for the given entry in the Sackner Archive.
+% Downloads one image for the given entry in the Sackner Archive, if
+% the image is non-blank.
 %
 % The image is retrieved from the server of the Sackner Archive and is
 % then stored locally.
@@ -145,27 +148,35 @@ assert_row(S, row(P,D,Lex), G) :-
 % If the entry has no more images, then this method succeeds without
 % instantiating `ImageName'.
 
-download_image(S, Local, G) :-
-  uri_comps(
-    FromUri,
-    uri(http,'ww3.rediscov.com',[sacknerarchives,'FULL',Local],_,_)
-  ),
-  directory_file_path(img, Local, File),
-  uri_comps(
-    ToUri,
-    uri(https,'demo.triply.cc', [wouter,'sackner-archives',assets,Local], _, _)
-  ),
-  http_download(FromUri, File),
-  rdf_assert_triple(S, foaf:depiction, uri(ToUri), G).
-
-
-
-%! download_nonblank_image(+N:nonneg, +S:rdf_subject, +ImageName:atom, +G:rdf_graph) is det.
-
 download_nonblank_image(N, _, 'blank.jpg', _) :- !,
   debug(known_issue, "Skipping blank image for record № ~D.", [N]).
-download_nonblank_image(_, S, ImageName, G) :-
-  download_image(S, ImageName, G).
+download_nonblank_image(N, S, ImageName, G) :-
+  uri_comps(
+    FromUri,
+    uri(http,'ww3.rediscov.com',[sacknerarchives,'FULL',ImageName],_,_)
+  ),
+  directory_file_path(img, ImageName, File),
+  uri_comps(
+    ToUri,
+    uri(https,'demo.triply.cc', [wouter,'sackner-archives',assets,ImageName], _, _)
+  ),
+  http_download_buggy(N, FromUri, File),
+  rdf_assert_triple(S, foaf:depiction, uri(ToUri), G).
+
+% @bug Image requests cannot include an `Accept: *' header, since the
+%      Sackner Archive server cannot handle it.  This means that we
+%      cannot use `http_client2', which always sets an `Accept'
+%      header.
+http_download_buggy(N, Uri, File) :-
+  http_open:http_open(Uri, In, [status_code(Status)]),
+  (   Status == 200
+  ->  true
+  ;   debug(unknown_issue, "Could not download image ~a for record № ~D.", [Uri,N])
+  ),
+  call_cleanup(
+    write_to_file(File, copy_stream_data(In), [type(binary)]),
+    close(In)
+  ).
 
 
 
@@ -232,26 +243,3 @@ upload(G) :-
   },
   dataset_upload(demo, wouter, 'sackner-archive', Properties),
   delete_file(DataFile).
-
-
-
-
-
-% GENERICS %
-
-% @bug The Sackner Archive cannot handle the HTTP `Accept' header for
-%      image downloads.
-file_download_buggy(Uri, File) :-
-  http_open:http_open(Uri, In, [status_code(Status)]),
-  (   Status == 200
-  ->  true
-  ;   print_message(warning, could_not_download_image(Uri,Status))
-  ),
-  call_cleanup(
-    setup_call_cleanup(
-      open(File, write, Out, [type(binary)]),
-      copy_stream_data(In, Out),
-      close(Out)
-    ),
-    close(In)
-  ).
