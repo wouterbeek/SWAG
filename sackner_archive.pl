@@ -5,10 +5,6 @@
 Constructs a Semantic Web database based on the Sackner Archive data,
 by scraping an online Web site.
 
-# Number of entries clawled.
-
-47,374 entries, with codes between 0 and 50,122.
-
 @author Wouter Beek
 @version 2013, 2015, 2018
 */
@@ -18,22 +14,18 @@ by scraping an online Web site.
 :- use_module(library(error)).
 :- use_module(library(http/http_open), []).
 :- use_module(library(lists)).
-:- use_module(library(semweb/rdf_db), [
-     rdf/4,
-     rdf_assert/4,
-     rdf_load/2,
-     rdf_unload_graph/1
-   ]).
 :- use_module(library(semweb/turtle), []).
 :- use_module(library(sgml)).
 :- use_module(library(xpath)).
+:- use_module(library(yall)).
 
 :- use_module(library(atom_ext)).
 :- use_module(library(http/http_client2)).
-:- use_module(library(sw/rdf_export)).
-:- use_module(library(sw/rdf_prefix)).
-:- use_module(library(sw/rdf_term)).
-:- use_module(library(tapir)).
+:- use_module(library(semweb/rdf_export)).
+:- use_module(library(semweb/rdf_mem)).
+:- use_module(library(semweb/rdf_prefix)).
+:- use_module(library(semweb/rdf_term)).
+:- use_module(library(tapir/tapir_api)).
 :- use_module(library(uri_ext)).
 
 :- debug(sackner_archive).
@@ -42,11 +34,11 @@ by scraping an online Web site.
     property_name_/2,
     property_name_/3.
 
-:- maplist(rdf_assert_prefix, [
-     dct-'http://purl.org/dc/terms/',
+:- maplist(rdf_register_prefix, [
+     dcterm,
      def-'https://sackner-archive.org/def/',
      graph-'https://sackner-archive.org/graph/',
-     schema-'http://schema.org/',
+     schema,
      work-'https://sackner-archive.org/id/work/'
    ]).
 
@@ -76,26 +68,19 @@ run(N) :-
   upload.
 
 upload :-
-  setup_call_cleanup(
-    gzopen('data.nq.gz', write, Out),
-    forall(
-      rdf(S, P, O, G),
-      rdf_write_quad(Out, S, P, O, G)
-    ),
-    close(Out)
-  ),
+  write_to_file('data.nq.gz', rdf_write_quads),
   expand_file_name('img/*.jpg', Files),
   Properties = _{
     accessLevel: public,
+    assets: Assets,
     avatar: 'avatar.gif',
-    binary_files: Files,
     description: "Ruth and Marvin Sackner founded the Archive in Miami Beach, Florida in 1979, later moving it to Miami, Florida in 2005.  Its initial mission was to establish a collection of books, critical texts, periodicals, ephemera, prints, drawings, collages, paintings, sculptures, objects, manuscripts, and correspondence dealing with precedent and contemporary, internationally produced, concrete and visual poetry.  The antecedent material had at its starting point, Stephane Mallarme’s poem, “Un Coup de Des” (Cosmopolis, 1897).  The historic examples included works with concrete/visual poetic sensibilities from such twentieth century art movements as Italian Futurism, Russian and Eastern European Avant Garde, Dada, Surrealism, Bauhaus, De Stijl, Ultra, Tabu-Dada, Lettrisme, and Ultra-Lettrisme.",
     files: ['data.nq.gz','vocab.trig'],
-    prefixes: [dct,def,graph,schema,work]
+    prefixes: [dcterm,def,graph,schema,work]
   },
   dataset_upload('sackner-archive', Properties),
   % Clean up temporary files.
-  concurrent_maplist(delete_file, ['data.nq.gz'|Files]).
+  concurrent_maplist(delete_file, ['data.nq.gz'|Assets]).
 
 scrape_entries(N1, G) :-
   (   scrape_entry(N1, G)
@@ -123,8 +108,8 @@ scrape_entry(N, G) :-
   (   Triples == []
   ->  debug(sackner_archive, "Skipping empty entry ~D.", [N])
   ;   rdf_prefix_iri(work, Id, S),
-      rdf_assert(S, rdf:type, schema:'CreativeWork', G),
-      rdf_assert(S, def:source_id, literal(type(xsd:nonNegativeInteger,Id)), G),
+      rdf_assert_triple(S, rdf:type, schema:'CreativeWork', G),
+      rdf_assert_triple(S, def:source_id, nonneg(Id), G),
       % Add the properties.
       maplist({S,G}/[Triple]>>assert_row(S, Triple, G), Triples),
       % Add the images, if any.
@@ -160,10 +145,10 @@ table_row(Table, row(P,D,Lex)) :-
 
 assert_row(S, row(P,D,Lex), G) :-
   writeln(P),
-  rdf_assert(S, P, literal(type(D,Lex)), G).
+  rdf_assert_triple(S, P, literal(type(D,Lex)), G).
 
 
-%! download_image(+S:iri, +ImageName:atom, +Graph:rdf_graph) is det.
+%! download_image(+S:iri, +Local:atom, +Graph:rdf_graph) is det.
 %
 % Returns an image for the given entry in the Sackner Archive.
 %
@@ -176,15 +161,18 @@ assert_row(S, row(P,D,Lex), G) :-
 % If the entry has no more images, then this method succeeds without
 % instantiating `ImageName'.
 
-download_image(S, Lex0, G) :-
+download_image(S, Local, G) :-
   uri_comps(
-    Uri,
-    uri(http,'ww3.rediscov.com',[sacknerarchives,'FULL',Lex0],_,_)
+    FromUri,
+    uri(http,'ww3.rediscov.com',[sacknerarchives,'FULL',Local],_,_)
   ),
-  directory_file_path(img, Lex0, File),
-  atom_concat('https://nightly.triply.cc/wouter/sackner-archives/assets/', Lex0, Lex),
-  file_download_buggy(Uri, File),
-  rdf_assert(S, foaf:depiction, literal(type(xsd:anyURI,Lex)), G).
+  directory_file_path(img, Local, File),
+  uri_comps(
+    ToUri,
+    uri(https,'demo.triply.cc', [wouter,'sackner-archives',assets,Local], _, _)
+  ),
+  file_download_buggy(FromUri, File),
+  rdf_assert_triple(S, foaf:depiction, uri(ToUri), G).
 
 
 
@@ -203,7 +191,7 @@ property_name_('# Letter Art Proofs:',     def:number_of_art_proofs, xsd:nonNega
 property_name_('# Letter Copies:',         def:number_of_letter_copies, xsd:nonNegativeInteger).
 property_name_('Announcement:',            def:announcement).
 property_name_('Annotation:',              def:annotation).
-property_name_('Author:',                  dct:creator).
+property_name_('Author:',                  dcterm:creator).
 property_name_('Catalog:',                 def:catalog).
 property_name_('City County:',             def:city_country).
 property_name_('Classification:',          def:classification).
@@ -221,7 +209,7 @@ property_name_('Number of Dups:',          def:number_of_dups, xsd:decimal).
 property_name_('Nbr Ser Mn:',              def:number_series_month).
 property_name_('Pages:',                   def:number_of_pages, xsd:nonNegativeInteger).
 property_name_('Periodical:',              def:periodical).
-property_name_('Publisher:',               dct:publisher).
+property_name_('Publisher:',               dcterm:publisher).
 property_name_('Purchase Year:',           def:purchase_year, xsd:gYear).
 property_name_('Series:',                  def:series).
 property_name_('Signature:',               def:signature).
@@ -231,7 +219,7 @@ property_name_('Title:',                   def:title).
 property_name_('Total Copies:',            def:number_of_copies, xsd:nonNegativeInteger).
 property_name_('Translator:',              def:translator).
 property_name_('Volume:',                  def:volume).
-property_name_('Year:',                    dct:created, xsd:gYear).
+property_name_('Year:',                    dcterm:created, xsd:gYear).
 
 
 
