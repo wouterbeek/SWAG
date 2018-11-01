@@ -78,7 +78,7 @@ upload :-
     files: ['data.nq.gz','vocab.trig'],
     prefixes: [dcterm,def,graph,schema,work]
   },
-  dataset_upload('sackner-archive', Properties),
+  dataset_upload(demo, wouter, 'sackner-archive', Properties),
   % Clean up temporary files.
   concurrent_maplist(delete_file, ['data.nq.gz'|Assets]).
 
