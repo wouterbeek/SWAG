@@ -1,164 +1,208 @@
-prefix graph: <https://demo.triply.cc/wouter/sackner-archive/graph/>
+prefix dataset: <https://triplydb.com/wouter/sackner-archive/>
+prefix graph: <https://triplydb.com/wouter/sackner-archive/graphs/>
+prefix owl: <http://www.w3.org/2002/07/owl#>
 prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-prefix sa: <https://demo.triply.cc/wouter/sackner-archive/def/>
-prefix schema: <http://schema.org/>
+prefix sdo: <http://schema.org/>
+prefix vocab: <https://demo.triply.cc/wouter/sackner-archive/vocab/>
+prefix void: <http://rdfs.org/ns/void#>
 prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 
+dataset:
+  a void:Dataset;
+  void:subset
+    graph:data,
+    graph:vocab.
+
+graph:data
+  rdfs:label "Data graph"@en.
+
+graph:vocab
+  rdfs:label "Vocabulary graph"@en.
+
 graph:vocab {
-
-  sa:number_of_artist_proofs
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Number of artist proofs"@en-us;
+  vocab:number_of_artist_proofs
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Number of artist proofs"@en;
     rdfs:range xsd:nonNegativeInteger.
 
-  sa:number_of_images
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Number of images"@en-us;
+  vocab:number_of_images
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Number of images"@en;
     rdfs:range xsd:nonNegativeInteger.
 
-  sa:number_of_art_proofs
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Number of art proofs"@en-us;
+  vocab:number_of_art_proofs
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Number of art proofs"@en;
     rdfs:range xsd:nonNegativeInteger.
 
-  sa:number_of_letter_copies
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Number of letter copies"@en-us;
+  vocab:number_of_letter_copies
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Number of letter copies"@en;
     rdfs:range xsd:nonNegativeInteger.
 
-  sa:announcement
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Announcement"@en-us;
+  vocab:announcement
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Announcement"@en;
     rdfs:range xsd:string.
 
-  sa:annotation
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Annotation"@en-us;
+  vocab:annotation
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Annotation"@en;
     rdfs:range xsd:string.
 
-  sa:catalog
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Catalog"@en-us;
+  vocab:catalog
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Catalog"@en;
     rdfs:range xsd:string.
 
-  sa:city_country
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "City and/or country"@en-us;
+  vocab:city_country
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "City and/or country"@en;
     rdfs:range xsd:string.
 
-  sa:classification
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Classification"@en-us;
+  vocab:classification
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Classification"@en;
     rdfs:range xsd:string.
 
-  sa:container
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Container"@en-us;
+  vocab:container
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Container"@en;
     rdfs:range xsd:string.
 
-  sa:contributor
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Contributor"@en-us;
+  vocab:contributor
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Contributor"@en;
     rdfs:range xsd:string.
 
-  sa:exhibition_announcement
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Exhibition announcement"@en-us;
+  vocab:exhibition_announcement
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Exhibition announcement"@en;
     rdfs:range xsd:string.
 
-  sa:exhibition_catalog
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Exhibition catalog"@en-us;
+  vocab:exhibition_catalog
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Exhibition catalog"@en;
     rdfs:range xsd:string.
 
-  sa:dimensions
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Dimensions"@en-us;
+  vocab:dimensions
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Dimensions"@en;
     rdfs:range xsd:string.
 
-  sa:illustration_bwc
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Illustration BWC"@en-us;
+  vocab:illustration_bwc
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Illustration BWC"@en;
     rdfs:range xsd:string.
 
-  sa:inscribed
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Inscribed"@en-us;
+  vocab:inscribed
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Inscribed"@en;
     rdfs:range xsd:string.
 
-  sa:language
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Language"@en-us;
+  vocab:language
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Language"@en;
     rdfs:range xsd:string.
 
-  sa:media
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Media"@en-us;
+  vocab:media
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Media"@en;
     rdfs:range xsd:string.
 
-  sa:nationality
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Nationality"@en-us;
+  vocab:nationality
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Nationality"@en;
     rdfs:range xsd:string.
 
-  sa:number_of_dups
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Number of duplicates"@en-us;
+  vocab:number_of_dups
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Number of duplicates"@en;
     rdfs:range xsd:decimal.
 
-  sa:number_series_month
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Magazine number/series/month"@en-us;
+  vocab:number_series_month
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Magazine number/series/month"@en;
     rdfs:range xsd:string.
 
-  sa:number_of_pages
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Number of pages"@en-us;
+  vocab:number_of_pages
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Number of pages"@en;
     rdfs:range xsd:nonNegativeInteger.
 
-  sa:periodical
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Periodical"@en-us;
+  vocab:periodical
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Periodical"@en;
     rdfs:range xsd:string.
 
-  sa:purchase_year
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Year of purchase"@en-us;
+  vocab:purchase_year
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Year of purchase"@en;
     rdfs:range xsd:gYear.
 
-  sa:series
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Series"@en-us;
+  vocab:series
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Series"@en;
     rdfs:range xsd:string.
 
-  sa:signature
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Signature"@en-us;
+  vocab:signature
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Signature"@en;
     rdfs:range xsd:string.
 
-  sa:subtitle
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Subtitle author"@en-us;
+  vocab:subtitle
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Subtitle author"@en;
     rdfs:range xsd:string.
 
-  sa:subtitle_author
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Subtitle"@en-us;
+  vocab:subtitle_author
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Subtitle"@en;
     rdfs:range xsd:string.
 
-  sa:number_of_copies
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Number of copies"@en-us;
+  vocab:number_of_copies
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Number of copies"@en;
     rdfs:range xsd:nonNegativeInteger.
 
-  sa:translator
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Translator"@en-us;
+  vocab:translator
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Translator"@en;
     rdfs:range xsd:string.
 
-  sa:volume
-    rdfs:domain schema:CreativeWork;
-    rdfs:label "Volume"@en-us;
+  vocab:volume
+    a owl:DatatypeProperty;
+    rdfs:domain sdo:CreativeWork;
+    rdfs:label "Volume"@en;
     rdfs:range xsd:string.
-
 }

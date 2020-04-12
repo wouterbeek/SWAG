@@ -1,8 +1,0 @@
-#+TITLE: etl-sackner-archive
-#+AUTHOR: Wouter Beek
-
-* Running the script
-
-#+BEGIN_SRC sh
-$ swipl -s script.pl -g etl -t halt
-#+END_SRC
