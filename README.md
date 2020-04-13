@@ -1,6 +1,4 @@
-<img src="img/sa.gif" align="right" height="150">
-
-[![](https://img.shields.io/badge/artworks-122-brightgreen)](https://triplydb.com/wouter/sa)
+<img src="img/sa.png" align="right" height="150">
 
 # Sackner Archives
 
