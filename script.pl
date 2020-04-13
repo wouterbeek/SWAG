@@ -49,7 +49,7 @@
 % The Offset argument allows for easy continuing of crawls that broke
 % before being completed.
 %
-% The last entry has identifier 50,122, as of 2013/03/14.
+% The last entry has identifier 50,122, as of 2020/04/13.
 
 run :-
   run(0).

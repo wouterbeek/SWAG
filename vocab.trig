@@ -1,9 +1,9 @@
-prefix dataset: <https://triplydb.com/wouter/sackner-archive/>
-prefix graph: <https://triplydb.com/wouter/sackner-archive/graphs/>
+prefix dataset: <https://triplydb.com/lib-uiowa/sa/>
+prefix graph: <https://triplydb.com/lib-uiowa/sa/graphs/>
 prefix owl: <http://www.w3.org/2002/07/owl#>
 prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 prefix sdo: <http://schema.org/>
-prefix vocab: <https://demo.triply.cc/wouter/sackner-archive/vocab/>
+prefix vocab: <https://demo.triply.cc/lib-uiowa/sa/vocab/>
 prefix void: <http://rdfs.org/ns/void#>
 prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 
